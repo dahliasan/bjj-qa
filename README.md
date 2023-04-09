@@ -34,3 +34,31 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## How to update Supabase schema using Prisma
+
+To update your Supabase database schema using Prisma, follow these steps:
+
+1.  First, make sure your Prisma schema file (`schema.prisma`) is updated with the new schema you provided.
+2.  Next, you need to generate a new migration for the changes in the schema. Run the following command in your terminal:
+    `npx prisma migrate dev --create-only`
+
+        You'll be prompted to enter a name for the new migration. Give it a descriptive name, such as `update_youtube_video_and_embedding_models`.
+
+3.  Once the new migration is created, navigate to the `prisma/migrations` directory, and open the `migration.sql` file inside the folder named after the migration you just created.
+4.  Add the following line at the beginning of the `migration.sql` file to enable the `vector` extension if it hasn't been enabled yet:
+
+    `CREATE EXTENSION IF NOT EXISTS vector`
+
+5.  Save the `migration.sql` file.
+6.  Now, run the new migration to apply the changes to your Supabase database:
+
+    `npx prisma migrate dev`
+
+    After running the migration, your Supabase database schema will be updated with the new `YoutubeVideo` and `Embedding` models.
+
+    Remember to regenerate your Prisma Client to have the updated types and client API:
+
+    `npx prisma generate`
+
+    You can now use the updated Prisma Client in your application to interact with the new schema.
