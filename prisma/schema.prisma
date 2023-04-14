@@ -26,6 +26,6 @@ model Embedding {
   duration  Int
   offset    Int
   embedding Unsupported("vector")?
-  video     YoutubeVideo           @relation(fields: [videoId], references: [id])
-  videoId   Int
+  video     YoutubeVideo           @relation(fields: [videoId], references: [videoId])
+  videoId   String
 }

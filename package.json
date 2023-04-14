@@ -2,7 +2,9 @@
   "name": "bjj-qa",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "prisma": {
+    "seed": "node --loader ts-node/esm --experimental-specifier-resolution=node prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,18 +12,26 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@prisma/client": "^4.12.0",
-    "@supabase/supabase-js": "^2.15.0",
+    "@radix-ui/react-avatar": "^1.0.2",
+    "@radix-ui/react-form": "^0.0.2",
+    "@radix-ui/react-scroll-area": "^1.0.3",
+    "@supabase/supabase-js": "^2.20.0",
     "@types/react": "18.0.33",
     "@types/react-dom": "18.0.11",
     "autoprefixer": "10.4.14",
     "d3-dsv": "^2.0.0",
+    "dotenv": "^16.0.3",
+    "hnswlib-node": "^1.4.2",
     "langchain": "^0.0.51",
     "next": "13.3.0",
     "postcss": "8.4.21",
     "prisma": "^4.12.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-markdown": "^8.0.7",
+    "supports-color": "^9.3.1",
     "tailwindcss": "3.3.1",
     "youtube-transcript": "^1.0.5"
   },

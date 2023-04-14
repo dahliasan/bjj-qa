@@ -1,12 +1,10 @@
 // script.js
 import { CSVLoader } from 'langchain/document_loaders'
 import { YoutubeTranscript } from 'youtube-transcript'
-import { OpenAIEmbeddings } from 'langchain/embeddings'
 ;(async () => {
   const loader = new CSVLoader('data/youtube videos - Sheet1.csv')
 
   const docs = await loader.load()
-  console.log(docs)
 
   docs.slice(0, 1).forEach(async (doc) => {
     const pageContent = doc.pageContent
@@ -18,21 +16,49 @@ import { OpenAIEmbeddings } from 'langchain/embeddings'
 
     try {
       const transcript = await YoutubeTranscript.fetchTranscript(videoId)
-      console.log({
-        title,
-        videoId,
-        channel,
-        thumbnailUrl,
-        transcript: transcript[0],
-      })
 
-      /* Create instance */
-      const embeddings = new OpenAIEmbeddings()
-
-      /* Embed queries */
-      const res = await embeddings.embedQuery('Hello world')
+      const biggerChunks = createFlexibleChunks(transcript, 512, 60000)
+      console.log(biggerChunks)
     } catch (error) {
       console.log(videoId, error)
     }
   })
 })()
+
+function createFlexibleChunks(transcript, maxChars, maxDuration) {
+  const newTranscript = []
+  let chunkText = ''
+  let chunkDuration = 0
+  let chunkOffset = transcript[0].offset
+
+  for (const entry of transcript) {
+    if (
+      chunkText.length + entry.text.length <= maxChars ||
+      chunkDuration + entry.duration <= maxDuration
+    ) {
+      chunkText += ' ' + entry.text
+      chunkDuration += entry.duration
+    } else {
+      newTranscript.push({
+        text: chunkText.trim(),
+        duration: chunkDuration,
+        offset: chunkOffset,
+      })
+
+      chunkText = entry.text
+      chunkDuration = entry.duration
+      chunkOffset = entry.offset
+    }
+  }
+
+  // Add the last chunk if it's not empty
+  if (chunkText !== '') {
+    newTranscript.push({
+      text: chunkText.trim(),
+      duration: chunkDuration,
+      offset: chunkOffset,
+    })
+  }
+
+  return newTranscript
+}
