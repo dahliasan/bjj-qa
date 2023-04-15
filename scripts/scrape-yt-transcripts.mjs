@@ -1,9 +1,39 @@
-import { YTTranscript } from "@/types/transcript";
+// script.js
+import { CSVLoader } from "langchain/document_loaders";
+import { YoutubeTranscript } from "youtube-transcript";
 
-export function createChunks(
-  transcript: YTTranscript[],
-  options: { maxChars: number; maxDurationInSeconds: number; metadata: {} }
-) {
+(async () => {
+  const loader = new CSVLoader("data/youtube videos - Sheet1.csv");
+
+  const docs = await loader.load();
+
+  docs.slice(0, 1).forEach(async (doc) => {
+    const { pageContent } = doc;
+    if (!pageContent) return;
+
+    const title = pageContent.match(/video: (.+)/)?.[1] ?? "";
+    const videoUrl = pageContent.match(/video_url: (.+)/)?.[1] ?? "";
+    const videoId = videoUrl.split("v=")[1].split("&")[0] ?? "";
+    const channel = pageContent.match(/channel: (.+)/)?.[1] ?? "";
+    const thumbnailUrl = pageContent.match(/thumbnail: (.+)/)?.[1] ?? "";
+
+    try {
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+      console.log(transcript);
+
+      const biggerChunks = createChunks(transcript, {
+        maxChars: 1000,
+        maxDurationInSeconds: 60,
+        metadata: { "video title": title, channel },
+      });
+      console.log(biggerChunks);
+    } catch (error) {
+      console.log(videoId, error);
+    }
+  });
+})();
+
+function createChunks(transcript, options) {
   const FACTOR = 1000; // Convert to seconds
 
   const { maxChars, maxDurationInSeconds, metadata } = options;
