@@ -17,7 +17,7 @@ export function createChunks(
 
   let chunks = [];
   let currentChunk = {
-    text: metadataString,
+    text: metadataString + `start time: ${transcript[0].offset / FACTOR}\n\n`,
     startTime: transcript[0].offset / FACTOR,
     duration: 0,
     charCount: 0,
@@ -41,7 +41,7 @@ export function createChunks(
       chunks.push(currentChunk);
 
       currentChunk = {
-        text: metadataString + text,
+        text: metadataString + `start time: ${startTime}\n\n` + text,
         startTime: startTime,
         duration: duration,
         charCount: lineChars,

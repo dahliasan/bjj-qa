@@ -2,23 +2,23 @@
 const nextConfig = {
   experimental: {
     appDir: true,
+    esmExternals: "loose",
   },
 
   webpack(config) {
-    config.externals = config.externals || []
+    config.externals = config.externals || [];
     config.externals.push({
-      chromadb: 'chromadb',
-      '@dqbd/tiktoken': 'tiktoken',
-      'cohere-ai': 'cohere',
-      '@huggingface/inference': 'huggingfaceInference',
-      replicate: 'replicate',
-      typeorm: 'typeorm',
-    })
-    config.experiments = { ...config.experiments, topLevelAwait: true }
-    // config.resolve.preferRelative = true
+      chromadb: "chromadb",
+      "@dqbd/tiktoken": "tiktoken",
+      "cohere-ai": "cohere",
+      "@huggingface/inference": "huggingfaceInference",
+      replicate: "replicate",
+      typeorm: "typeorm",
+    });
+    config.experiments = { ...config.experiments, topLevelAwait: true };
 
-    return config
+    return config;
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

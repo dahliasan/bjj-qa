@@ -89,7 +89,7 @@ async function main() {
       transcriptChunked = createChunks(transcript, {
         maxChars: 1000,
         maxDurationInSeconds: 60,
-        metadata: { "video title": title, channel },
+        metadata: { "video title": title, "youtube channel": channel },
       });
     } catch (e) {
       console.log("videoId: ", videoId);
