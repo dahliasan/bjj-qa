@@ -57,7 +57,7 @@ export default async function handler(
     vectorStore.asRetriever(),
     {
       returnSourceDocuments: true,
-      questionGeneratorTemplate: `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+      questionGeneratorTemplate: `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question. Please end the question with a line break.
 Chat History:
 {chat_history}
 Follow Up Input: {question}

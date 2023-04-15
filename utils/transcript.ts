@@ -56,3 +56,21 @@ export function createChunks(
 
   return chunks;
 }
+
+export function extractMetadata(text: string, labels: string[]) {
+  const metadata = {} as Record<string, string>;
+
+  for (const label of labels) {
+    const regex = new RegExp(`${label}:\\s*(.+)\\n`, "i");
+    const match = text.match(regex);
+
+    if (match) {
+      metadata[label] = match[1];
+      text = text.replace(regex, ""); // Remove the matched metadata from the text
+    } else {
+      metadata[label] = "";
+    }
+  }
+
+  return { metadata, remainingText: text.trim() };
+}

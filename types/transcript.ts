@@ -10,3 +10,18 @@ export type YTTranscript = {
   duration: number;
   offset: number;
 };
+
+export type Source = {
+  metadata: SourceMetadata;
+  pageContent: string;
+};
+
+export type SourceMetadata = {
+  id: number;
+  chunk: string;
+  videoId: string;
+  _distance: number;
+  "video title"?: string;
+  channel?: string;
+  "start time"?: string;
+};

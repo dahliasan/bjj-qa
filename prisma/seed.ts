@@ -3,7 +3,7 @@ import { CSVLoader } from "langchain/document_loaders";
 import { YoutubeTranscript } from "youtube-transcript";
 import { PrismaVectorStore } from "langchain/vectorstores";
 import { OpenAIEmbeddings } from "langchain/embeddings";
-import { createChunks } from "../utils/chunk-transcript";
+import { createChunks } from "../utils/transcript";
 import { YTTranscriptChunk } from "@/types/transcript";
 
 const prisma = new PrismaClient();

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import * as Form from "@radix-ui/react-form";
 import * as Avatar from "@radix-ui/react-avatar";
+import Sources from "./sources2";
 
 const Chat = () => {
   const [messageState, setMessageState] = useState<{
@@ -22,24 +23,32 @@ const Chat = () => {
     ],
     history: [],
   });
-  const [query, setQuery] = useState<string>("how do i pass the knee shield?");
+  const [query, setQuery] = useState<string>("how do i sweep from half guard?");
   const [loading, setLoading] = useState<boolean>(false);
 
   const { messages, pending, history, pendingSourceDocuments } = messageState;
 
   // set focus to the text area when the component is mounted
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<ScrollArea.ScrollAreaViewportElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    console.log("pending", pending);
-    console.log("history", history);
-    console.log("messages", messages);
-    console.log(chatMessages);
-  }, [pending, history, messages]);
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // useEffect(() => {
+  //   console.log("pending", pending);
+  //   console.log("history", history);
+  //   console.log("messages", messages);
+  //   console.log(chatMessages);
+  // }, [pending, history, messages]);
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -162,7 +171,10 @@ const Chat = () => {
         type="scroll"
         className="h-[60vh] overflow-hidden rounded-lg border border-black bg-slate-100 dark:text-black"
       >
-        <ScrollArea.Viewport className="h-full w-full border-inherit">
+        <ScrollArea.Viewport
+          className="h-full w-full border-inherit"
+          ref={chatContainerRef}
+        >
           <div>
             {chatMessages.map((message, index) => {
               console.log(message);
@@ -195,14 +207,7 @@ const Chat = () => {
                     </ReactMarkdown>
                   </div>
 
-                  {message.sources && (
-                    <div className="mt-4 flex items-center justify-end gap-4 font-mono text-xs">
-                      <span>sources:</span>
-                      {message.sources.map((source: any, index: number) => {
-                        return <span key={index}>{source.metadata.id}</span>;
-                      })}
-                    </div>
-                  )}
+                  {message.sources && <Sources sources={message.sources} />}
                 </div>
               );
             })}
@@ -229,7 +234,7 @@ const Chat = () => {
           </div>
           <Form.Control asChild>
             <textarea
-              className="box-border inline-flex w-full resize-none appearance-none items-center justify-center rounded-md p-2 leading-none shadow-[0_0_0_1px] outline-none selection:bg-black hover:shadow-[0_0_0_1px_black] focus:shadow-[0_0_0_2px_black]"
+              className="box-border inline-flex w-full resize-none appearance-none items-center justify-center rounded-md p-2 leading-none shadow-[0_0_0_1px] outline-none hover:shadow-[0_0_0_1px_black] focus:shadow-[0_0_0_2px_black]"
               required
               onKeyDown={handleEnter}
               value={query}

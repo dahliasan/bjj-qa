@@ -7,7 +7,7 @@ const urbanist = Urbanist({ subsets: ["latin"] });
 export default function Home() {
   return (
     <main
-      className={`mx-auto flex min-h-screen max-w-prose flex-col items-center justify-center ${urbanist.className}`}
+      className={`mx-auto flex min-h-screen max-w-prose flex-col items-center justify-center selection:bg-yellow-200 selection:text-black ${urbanist.className}`}
       lang="en"
     >
       <Chat />
