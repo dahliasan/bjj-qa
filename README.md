@@ -62,3 +62,27 @@ To update your Supabase database schema using Prisma, follow these steps:
     `npx prisma generate`
 
     You can now use the updated Prisma Client in your application to interact with the new schema.
+
+## How do seed your db
+
+1. Create `seed.ts` in the `prisma` folder. See [prisma docs](https://www.prisma.io/docs/guides/migrate/seed-database#how-to-seed-your-database-in-prisma) for seed template example.
+2. Add the following to `package.json`
+
+```
+"prisma": {
+  "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+},
+```
+
+2. In the terminal run `npx prisma db seed` or `pnpm prisma db seed`
+
+## How to reset development db and seed new db
+
+1. Reset the db without seeding yet. We do this because we need to manually modify the sql to set up vector embeddings
+
+```
+prisma migrate reset --skip-seed
+```
+
+2. Follow steps in the previous section "How to update Supabase schema using Prisma"
+3. Run `npx prsima db seed`
