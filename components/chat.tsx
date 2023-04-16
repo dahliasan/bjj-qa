@@ -159,11 +159,11 @@ const Chat = () => {
   }, [messages, pending]);
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       {/* chat area */}
       <ScrollArea.Root
         type="scroll"
-        className="h-[60vh] overflow-hidden rounded-lg border border-black bg-slate-100 dark:text-black"
+        className="h-[60vh] overflow-hidden rounded-lg border border-black bg-stone-300 dark:text-black"
       >
         <ScrollArea.Viewport
           className="h-full w-full border-inherit"

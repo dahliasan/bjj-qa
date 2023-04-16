@@ -14,7 +14,7 @@ export default function SourceCard({
   const { pageContent, metadata } = source;
 
   return (
-    <HoverCard.Root openDelay={0} closeDelay={0}>
+    <HoverCard.Root openDelay={50} closeDelay={50}>
       <HoverCard.Trigger asChild>
         <Link
           className="inline-block max-w-[15ch] cursor-pointer flex-col truncate rounded-lg border border-black bg-stone-200 p-1 px-2 text-[10px] text-black transition hover:bg-slate-50 focus:shadow-[0_0_0_2px_white]"

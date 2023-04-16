@@ -18,12 +18,14 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
+  /* background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
-    rgb(var(--background-start-rgb));
+    rgb(var(--background-start-rgb)); */
+
+  background-color: #e7e5e4;
 }
 
 .markdown a {
@@ -82,4 +84,10 @@ body {
     -webkit-transform: scale(1);
     transform: scale(1);
   }
+}
+
+.modal {
+  /* background: hsl(24, 6%, 83%, 95%); */
+
+  --tw-bg-opacity: 95%;
 }
