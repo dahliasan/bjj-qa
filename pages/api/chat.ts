@@ -3,16 +3,18 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
 import { makeChain } from "@/utils/makechain";
+import { NextRequest } from "next/server";
 
 export const config = {
   runtime: "edge"
 };
 
 export default async function handler(
-  req: NextApiRequest,
+  req: NextRequest,
   res: NextApiResponse
 ) {
-  const { question, history } = req.body;
+
+  const { question, history } = (await req.json()) as { question: string, history: string[]};
 
 
   // OpenAI recommends replacing newlines with spaces for best results
