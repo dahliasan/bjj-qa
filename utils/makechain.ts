@@ -1,4 +1,4 @@
-import { OpenAI } from "langchain/llms";
+import { OpenAI } from "langchain/llms/openai";
 import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
 import { HNSWLib, SupabaseVectorStore } from "langchain/vectorstores";
 import { PromptTemplate } from "langchain/prompts";
