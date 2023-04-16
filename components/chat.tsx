@@ -6,7 +6,8 @@ import ReactMarkdown from "react-markdown";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import * as Form from "@radix-ui/react-form";
 import * as Avatar from "@radix-ui/react-avatar";
-import Sources from "./sources2";
+import Sources from "./sources";
+import Spinner from "./spinner";
 
 const Chat = () => {
   const [messageState, setMessageState] = useState<{
@@ -42,13 +43,6 @@ const Chat = () => {
         chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // useEffect(() => {
-  //   console.log("pending", pending);
-  //   console.log("history", history);
-  //   console.log("messages", messages);
-  //   console.log(chatMessages);
-  // }, [pending, history, messages]);
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -177,7 +171,6 @@ const Chat = () => {
         >
           <div>
             {chatMessages.map((message, index) => {
-              console.log(message);
               const avatarSrc =
                 message.type == "apiMessage"
                   ? "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80"
@@ -202,7 +195,7 @@ const Chat = () => {
                         GS
                       </Avatar.Fallback>
                     </Avatar.Root>
-                    <ReactMarkdown linkTarget="_blank">
+                    <ReactMarkdown className="markdown" linkTarget="_blank">
                       {message.message}
                     </ReactMarkdown>
                   </div>
@@ -252,7 +245,7 @@ const Chat = () => {
             disabled={loading}
             className="mt-2 box-border inline-flex h-[35px] w-full items-center justify-center rounded-md bg-slate-950 px-4 py-1 font-medium leading-none text-white hover:opacity-90 focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none dark:bg-yellow-200 dark:text-black"
           >
-            Ask
+            {loading ? <Spinner /> : "Ask"}
           </button>
         </Form.Submit>
       </Form.Root>

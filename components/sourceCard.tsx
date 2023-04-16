@@ -5,16 +5,24 @@ import * as Separator from "@radix-ui/react-separator";
 import { SourceMetadata } from "@/types/transcript";
 import Link from "next/link";
 
-const SourceCard = ({ source }: { source: SourceMetadata }) => (
-  <HoverCard.Root openDelay={0} closeDelay={100} defaultOpen={true}>
+const SourceCard = ({
+  source,
+  index,
+}: {
+  source: SourceMetadata;
+  index: number;
+}) => (
+  <HoverCard.Root openDelay={0} closeDelay={0}>
     <HoverCard.Trigger asChild>
       <Link
-        className="inline-block max-w-[20ch] cursor-pointer flex-col truncate rounded-lg border border-black bg-stone-200 p-1 px-2 text-xs text-black transition hover:bg-slate-50 focus:shadow-[0_0_0_2px_white]"
-        href={`https://www.youtube.com/watch?v=${source.videoId}?t=${source["start time"]}`}
+        className="inline-block max-w-[15ch] cursor-pointer flex-col truncate rounded-lg border border-black bg-stone-200 p-1 px-2 text-[10px] text-black transition hover:bg-slate-50 focus:shadow-[0_0_0_2px_white]"
+        href={`https://youtu.be/${source.videoId}?t=${
+          source["start time"] && parseInt(source["start time"])
+        }`}
         target="_blank"
         rel="noreferrer noopener"
       >
-        {source["video title"]}
+        {index + 1}. {source["video title"]}
       </Link>
     </HoverCard.Trigger>
     <HoverCard.Portal>

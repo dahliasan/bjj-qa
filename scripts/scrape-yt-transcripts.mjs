@@ -33,7 +33,7 @@ import { YoutubeTranscript } from "youtube-transcript";
   });
 })();
 
-function createChunks(transcript, options) {
+export function createChunks(transcript, options) {
   const FACTOR = 1000; // Convert to seconds
 
   const { maxChars, maxDurationInSeconds, metadata } = options;
@@ -43,11 +43,11 @@ function createChunks(transcript, options) {
         ([key, value]) =>
           `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`
       )
-      .join("\n") + "\n\n";
+      .join("\n") + "\n";
 
   let chunks = [];
   let currentChunk = {
-    text: metadataString,
+    text: metadataString + `start time: ${transcript[0].offset / FACTOR}\n\n`,
     startTime: transcript[0].offset / FACTOR,
     duration: 0,
     charCount: 0,
@@ -71,7 +71,7 @@ function createChunks(transcript, options) {
       chunks.push(currentChunk);
 
       currentChunk = {
-        text: metadataString + text,
+        text: metadataString + `start time: ${startTime}\n\n` + text,
         startTime: startTime,
         duration: duration,
         charCount: lineChars,

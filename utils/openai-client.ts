@@ -9,7 +9,7 @@ export const openai = new OpenAI({
 });
 
 export const openaiStream = new OpenAI({
-  temperature: 0.4,
+  temperature: 0.2,
   streaming: true,
   modelName: "gpt-3.5-turbo",
 });

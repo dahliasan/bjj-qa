@@ -23,6 +23,7 @@ const storeTranscriptEmbeddings = async (
       columns: {
         id: PrismaVectorStore.IdColumn,
         chunk: PrismaVectorStore.ContentColumn,
+        videoId: PrismaVectorStore.IdColumn,
       },
     }
   );
@@ -52,7 +53,7 @@ async function main() {
   // load videos from csv
   const loader = new CSVLoader("data/youtube videos - Sheet1.csv");
   const videos = await loader.load();
-  const firstTwoVideos = videos.slice(0, 2);
+  const firstTwoVideos = videos.slice(0, 5);
 
   //   save each video metadata to database
   for (const video of firstTwoVideos) {

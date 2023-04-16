@@ -2,18 +2,18 @@ import { YTTranscript } from "@/types/transcript";
 
 export function createChunks(
   transcript: YTTranscript[],
-  options: { maxChars: number; maxDurationInSeconds: number; metadata: {} }
+  options: { maxChars: number; maxDurationInSeconds: number; metadataToAdd: {} }
 ) {
   const FACTOR = 1000; // Convert to seconds
 
-  const { maxChars, maxDurationInSeconds, metadata } = options;
+  const { maxChars, maxDurationInSeconds, metadataToAdd } = options;
   const metadataString =
-    Object.entries(metadata)
+    Object.entries(metadataToAdd)
       .map(
         ([key, value]) =>
           `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`
       )
-      .join("\n") + "\n\n";
+      .join("\n") + "\n";
 
   let chunks = [];
   let currentChunk = {
