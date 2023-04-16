@@ -82,7 +82,7 @@ export async function getTranscriptsFromYoutubeData(
 
       const biggerChunks = createChunks(transcript, {
         maxChars: 1000,
-        maxDurationInSeconds: 60 * 5,
+        maxDurationInSeconds: 60,
         metadataToAdd: { "video title": title, channel },
       });
 

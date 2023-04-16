@@ -18,13 +18,16 @@ const Chat = () => {
   }>({
     messages: [
       {
-        message: "Hi! I'm grapple sensei, how can I help you today?",
+        message:
+          "Hi! I'm grapple sensei, how can I help you today? fyi I've only been watching lots of half guard and guard passing videos so far...",
         type: "apiMessage",
       },
     ],
     history: [],
   });
-  const [query, setQuery] = useState<string>("how do i sweep from half guard?");
+  const [query, setQuery] = useState<string>(
+    "give me a chain for passing half guard"
+  );
   const [loading, setLoading] = useState<boolean>(false);
 
   const { messages, pending, history, pendingSourceDocuments } = messageState;

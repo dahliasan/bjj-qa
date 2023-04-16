@@ -13,13 +13,13 @@ Follow Up Input: {question}
 Standalone question:`);
 
 const QA_PROMPT = PromptTemplate.fromTemplate(
-  `You are an AI assistant and a brazilian jiu jitsu (bjj) expert. You are given the following extracted parts of various youtube videos and a question. Provide a conversational answer based on the context provided. If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer. If the question is not related to bjj or the context provided, politely inform them that you are tuned to only answer questions that are related to bjj.
+  `You are an AI assistant and a brazilian jiu jitsu (bjj) expert. You are given the following extracted parts of various youtube videos and a question. Provide a conversational answer based on the context provided. First, decide which context is relevant based on the video title and form you answer based on those. In bjj a sweep is the opposite of a pass. If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer. If the question is not related to bjj or the context provided, politely inform them that you are tuned to only answer questions that are related to bjj.
 
       Question: {question}
       =========
       {context}
       =========
-      Answer in Markdown:`
+      Brief concise answer in Markdown:`
 );
 
 export const makeChain = (
@@ -47,6 +47,6 @@ export const makeChain = (
     combineDocumentsChain: docChain,
     questionGeneratorChain: questionGenerator,
     returnSourceDocuments: true,
-    k: 3,
+    k: 4,
   });
 };
