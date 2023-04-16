@@ -4,6 +4,10 @@ import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
 import { makeChain } from "@/utils/makechain";
 
+export const config = {
+  runtime: "edge"
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
