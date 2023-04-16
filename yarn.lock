@@ -188,6 +188,11 @@
   resolved "https://registry.yarnpkg.com/@fortaine/fetch-event-source/-/fetch-event-source-3.0.6.tgz#b8552a2ca2c5202f5699b93a92be0188d422b06e"
   integrity sha512-621GAuLMvKtyZQ3IA6nlDWhV1V/7PGOTNIGLUifxt0KzM+dZIweJ6F3XvQF3QnqeNfS1N7WQ0Kil1Di/lhChEw==
 
+"@huggingface/inference@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@huggingface/inference/-/inference-1.8.0.tgz#5b1b22c790451e8051adefe9b7f725a7135c38a8"
+  integrity sha512-Dkh7PiyMf6TINRocQsdceiR5LcqJiUHgWjaBMRpCUOCbs+GZA122VH9q+wodoSptj6rIQf7wIwtDsof+/gd0WA==
+
 "@jridgewell/gen-mapping@^0.3.2":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.3.tgz#7e02e6eb5df901aaedb08514203b096614024098"
@@ -925,6 +930,11 @@ client-only@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/client-only/-/client-only-0.0.1.tgz#38bba5d403c41ab150bff64a95c85013cf73bca1"
   integrity sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==
+
+cohere-ai@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/cohere-ai/-/cohere-ai-6.2.0.tgz#a0874bd339d3f3cf7a2726b5458b5b49e4b3c18b"
+  integrity sha512-nKUutFpbTQ1TJji3RAmKq9+UKQyf2MrI2qAeOPPZuGlch734XT5KltMUd/AXDY7IAdGHbB8v6VNIEO3qSVST5g==
 
 color-convert@^2.0.1:
   version "2.0.1"
@@ -2129,6 +2139,11 @@ remark-rehype@^10.0.0:
     "@types/mdast" "^3.0.0"
     mdast-util-to-hast "^12.1.0"
     unified "^10.0.0"
+
+replicate@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/replicate/-/replicate-0.10.0.tgz#2ee7ea1c2ce469e8818c3f07e36b930ed0b9d671"
+  integrity sha512-bST45r8uzFBscackGnwISzCtXAywT2iG1W9Dmff47lHHMbRCMYQbjR6NNWFYOGaY0TZe2G6m4Oy/qBNGxWCBCg==
 
 resolve@^1.1.7, resolve@^1.22.1:
   version "1.22.3"
