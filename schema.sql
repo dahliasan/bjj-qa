@@ -1,5 +1,5 @@
 -- Enable the pgvector extension to work with embedding vectors
-create extension vector;
+create extension if not exists vector;
 
 -- Create a table to store your documents
 create table documents (

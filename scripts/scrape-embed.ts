@@ -76,7 +76,8 @@ async function embedDocuments(
 
 (async () => {
   const docs = await getYoutubeDataFromCsv("data/youtube videos - Sheet1.csv");
-  const docsWithTranscripts = await getTranscriptsFromYoutubeData([docs[0]]);
+  const docsWithTranscripts = await getTranscriptsFromYoutubeData(docs);
+
   //   embed docs into supabase
   await embedDocuments(
     supabaseClient,
@@ -84,25 +85,3 @@ async function embedDocuments(
     new OpenAIEmbeddings()
   );
 })();
-
-// Example output of bigger chunks:
-//  {
-//     text: 'Video title: The BEST Half Guard Sweep There is!\n' +
-//       'Channel: TeachMeGrappling Coach Brian\n' +
-//       'start time: 828.51\n' +
-//       '\n' +
-//       'guys I just came back from the jujitsu United for a cause to help prevent cancer we raised a bunch of money over at Matt Baker School in Bakersfield Bakersfield Brazilian Jiu Jitsu thank you to Matt Baker there was Dan Camarillo there was Tom Knox it was awesome Joe Baker also taught so great great little field of black belts teaching myself included was there and it was a fun time and I really liked Joshua Cisneros showing us that cool',
-//     startTime: 828.51,
-//     duration: 58.001000000000005,
-//     charCount: 429
-//   },
-//   {
-//     text: 'Video title: The BEST Half Guard Sweep There is!\n' +
-//       'Channel: TeachMeGrappling Coach Brian\n' +
-//       'start time: 858.75\n' +
-//       '\n' +
-//       "technique from yesterday so if you guys have not seen it or you haven't seen Josh this no let's go check him out look them up all right we're out guys we'll see you guys next time [Music]",
-//     startTime: 858.75,
-//     duration: 41.85,
-//     charCount: 182
-//   }

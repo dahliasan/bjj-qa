@@ -195,7 +195,10 @@ const Chat = () => {
                         GS
                       </Avatar.Fallback>
                     </Avatar.Root>
-                    <ReactMarkdown className="markdown" linkTarget="_blank">
+                    <ReactMarkdown
+                      className="markdown leading-relaxed"
+                      linkTarget="_blank"
+                    >
                       {message.message}
                     </ReactMarkdown>
                   </div>

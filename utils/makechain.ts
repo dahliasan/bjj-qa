@@ -2,6 +2,7 @@ import { OpenAI } from "langchain/llms";
 import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
 import { HNSWLib, SupabaseVectorStore } from "langchain/vectorstores";
 import { PromptTemplate } from "langchain/prompts";
+import { openai, openaiStream } from "./openai-client";
 
 const CONDENSE_PROMPT =
   PromptTemplate.fromTemplate(`Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
@@ -27,15 +28,12 @@ export const makeChain = (
 ) => {
   // first prompt to gpt to condense the question
   const questionGenerator = new LLMChain({
-    llm: new OpenAI({ temperature: 0 }),
+    llm: openai,
     prompt: CONDENSE_PROMPT,
   });
 
   // second prompt to gpt to answer the question
-  const model = new OpenAI({
-    temperature: 0,
-    streaming: Boolean(onTokenStream),
-  });
+  const model = openaiStream;
 
   model.callbackManager.handleLLMNewToken = async (token: string) => {
     onTokenStream(token);

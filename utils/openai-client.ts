@@ -6,6 +6,7 @@ if (!process.env.OPENAI_API_KEY) {
 
 export const openai = new OpenAI({
   temperature: 0,
+  modelName: "gpt-3.5-turbo",
 });
 
 export const openaiStream = new OpenAI({

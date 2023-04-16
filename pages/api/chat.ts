@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaVectorStore } from "langchain/vectorstores";
 import { OpenAIEmbeddings } from "langchain/embeddings";
-import { PrismaClient, Prisma, Embedding } from "@prisma/client";
-import { openaiStream } from "@/utils/openai-client";
-import { ConversationalRetrievalQAChain } from "langchain/chains";
-
-const prisma = new PrismaClient();
+import { SupabaseVectorStore } from "langchain/vectorstores";
+import { supabaseClient } from "@/utils/supabase-client";
+import { makeChain } from "@/utils/makechain";
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,18 +17,9 @@ export default async function handler(
   const sanitizedQuestion = question.trim().replaceAll("\n", " ");
 
   /* create vectorstore*/
-  const vectorStore = PrismaVectorStore.withModel<Embedding>(prisma).create(
+  const vectorStore = await SupabaseVectorStore.fromExistingIndex(
     new OpenAIEmbeddings(),
-    {
-      prisma: Prisma,
-      tableName: "Embedding",
-      vectorColumnName: "embedding",
-      columns: {
-        id: PrismaVectorStore.IdColumn,
-        chunk: PrismaVectorStore.ContentColumn,
-        videoId: PrismaVectorStore.IdColumn,
-      },
-    }
+    { client: supabaseClient }
   );
 
   res.writeHead(200, {
@@ -44,33 +32,13 @@ export default async function handler(
     res.write(`data: ${data}\n\n`);
   };
 
+  // send first msg
   sendData(JSON.stringify({ data: "" }));
 
-  const model = openaiStream;
-  model.callbackManager.handleLLMNewToken = async (token: string) => {
-    sendData(JSON.stringify({ msg: token }));
-  };
-
   // create the chain
-  const chain = ConversationalRetrievalQAChain.fromLLM(
-    model,
-    vectorStore.asRetriever(),
-    {
-      returnSourceDocuments: true,
-      questionGeneratorTemplate: `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone question:`,
-      qaTemplate: `You are an AI assistant and a brazilian jiu jitsu (bjj) expert. You are given the following extracted parts of various youtube videos and a question. Provide a conversational answer based on the context provided. If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer. If the question is not related to bjj or the context provided, politely inform them that you are tuned to only answer questions that are related to bjj.
-
-      Question: {question}
-      =========
-      {context}
-      =========
-      Answer in Markdown:`,
-    }
-  );
+  const chain = makeChain(vectorStore, (token: string) => {
+    sendData(JSON.stringify({ msg: token }));
+  });
 
   try {
     //Ask a question
@@ -79,6 +47,7 @@ Standalone question:`,
       chat_history: history || [],
     });
     sendData(JSON.stringify({ sources: response }));
+    console.log("response", response);
   } catch (error) {
     console.log("error", error);
   } finally {

@@ -60,17 +60,22 @@ export function createChunks(
 export function extractMetadata(text: string, labels: string[]) {
   const metadata = {} as Record<string, string>;
 
-  for (const label of labels) {
-    const regex = new RegExp(`${label}:\\s*(.+)\\n`, "i");
-    const match = text.match(regex);
+  try {
+    for (const label of labels) {
+      const regex = new RegExp(`${label}:\\s*(.+?)\\n`, "i");
+      const match = text.match(regex);
 
-    if (match) {
-      metadata[label] = match[1];
-      text = text.replace(regex, ""); // Remove the matched metadata from the text
-    } else {
-      metadata[label] = "";
+      if (match) {
+        metadata[label] = match[1];
+        text = text.replace(regex, ""); // Remove the matched metadata from the text
+      } else {
+        metadata[label] = "";
+      }
     }
-  }
 
-  return { metadata, remainingText: text.trim() };
+    return { metadata, remainingText: text.trim() };
+  } catch (error) {
+    console.error(error);
+    return { metadata: {}, remainingText: text };
+  }
 }
