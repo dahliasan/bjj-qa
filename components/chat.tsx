@@ -174,10 +174,17 @@ const Chat = () => {
         >
           <div>
             {chatMessages.map((message, index) => {
+              // const avatarSrc =
+              //   message.type == "apiMessage"
+              //     ? "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80"
+              //     : "https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&w=128&h=128&dpr=2&q=80";
               const avatarSrc =
                 message.type == "apiMessage"
-                  ? "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80"
-                  : "https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&w=128&h=128&dpr=2&q=80";
+                  ? "/martial-arts-uniform_1f94b.png"
+                  : "/owl.png";
+
+              const avatarBg =
+                message.type == "apiMessage" ? "bg-slate-800" : "bg-blue-300";
 
               return (
                 <div
@@ -185,14 +192,16 @@ const Chat = () => {
                   className="border-b border-b-black bg-neutral-100 p-4"
                 >
                   <div className="flex gap-4">
-                    <Avatar.Root className="h-[45px] w-[45px] shrink-0 select-none overflow-hidden rounded-full bg-black align-middle">
+                    <Avatar.Root
+                      className={`grid h-[45px] w-[45px] shrink-0 select-none place-items-center overflow-hidden rounded-full ${avatarBg} align-middle`}
+                    >
                       <Avatar.Image
-                        className="h-full w-full rounded-[inherit] object-cover"
+                        className="h-2/3 w-2/3 rounded-[inherit] object-cover"
                         src={avatarSrc}
-                        alt="Grapple Sensei"
+                        alt="chat avatar"
                       />
                       <Avatar.Fallback
-                        className="leading-1 flex h-full w-full items-center justify-center bg-white text-[15px] font-medium"
+                        className={`leading-1 flex h-full w-full items-center justify-center ${avatarBg} text-[15px] font-medium`}
                         delayMs={600}
                       >
                         GS
