@@ -10,7 +10,7 @@ export default function Poll({ show = true }) {
       {/* The button to open modal */}
       <label
         htmlFor="modal-poll"
-        className="cursor-pointer rounded-lg border border-black bg-yellow-300 px-4 py-1 text-xs font-semibold"
+        className="cursor-pointer rounded-lg border border-black bg-yellow-300 px-4 py-1 text-xs font-semibold text-black"
       >
         give feedback
       </label>

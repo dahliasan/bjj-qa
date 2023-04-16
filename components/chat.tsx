@@ -233,7 +233,7 @@ const Chat = () => {
           </div>
           <Form.Control asChild>
             <textarea
-              className="box-border inline-flex w-full resize-none appearance-none items-center justify-center rounded-md p-2 leading-none shadow-[0_0_0_1px] outline-none hover:shadow-[0_0_0_1px_black] focus:shadow-[0_0_0_2px_black]"
+              className="box-border inline-flex w-full resize-none appearance-none items-center justify-center rounded-md p-2 outline-none hover:shadow-[0_0_0_1px_black] focus:shadow-[0_0_0_2px_black] dark:bg-neutral-100"
               required
               onKeyDown={handleEnter}
               value={query}
@@ -249,7 +249,7 @@ const Chat = () => {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 box-border inline-flex h-[35px] w-full items-center justify-center rounded-md bg-slate-950 px-4 py-1 font-medium leading-none text-white hover:opacity-90 focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none dark:bg-yellow-200 dark:text-black"
+            className="mt-2 box-border inline-flex h-[35px] w-full items-center justify-center rounded-md bg-slate-950 px-4 py-1 font-medium leading-none text-white hover:opacity-90 focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none dark:bg-yellow-300 dark:text-black"
           >
             {loading ? <Spinner /> : "Ask"}
           </button>
