@@ -1,6 +1,6 @@
 import { OpenAI } from "langchain/llms/openai";
 import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
-import { HNSWLib, SupabaseVectorStore } from "langchain/vectorstores";
+import { SupabaseVectorStore } from "langchain/vectorstores";
 import { PromptTemplate } from "langchain/prompts";
 import { openai, openaiStream } from "./openai-client";
 
@@ -52,14 +52,13 @@ const QA_PROMPT = PromptTemplate.fromTemplate(
 
 export const makeChain = (
   vectorstore: SupabaseVectorStore,
-  streamModel: OpenAI,
+  streamModel: OpenAI
 ) => {
   // first prompt to gpt to condense the question
   const questionGenerator = new LLMChain({
     llm: openai,
     prompt: CONDENSE_PROMPT,
   });
-
 
   const docChain = loadQAChain(streamModel, { prompt: QA_PROMPT });
 
