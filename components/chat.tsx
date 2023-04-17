@@ -13,8 +13,8 @@ const Chat = () => {
   const [messageState, setMessageState] = useState<{
     messages: MessageType[];
     pending?: string;
-    pendingSourceDocuments?: {}[];
     history: [string, string][];
+    pendingSourceDocuments?: any[];
   }>({
     messages: [
       {
@@ -88,9 +88,23 @@ const Chat = () => {
         }),
         signal: ctrl.signal,
         onmessage: (event) => {
-          // if end of messages
-          if (event.data === "[DONE]") {
-            // when we get the end of messages, we set the message and history
+          const eventData = JSON.parse(event.data);
+          console.log(eventData);
+
+          if (eventData.type === "token") {
+            const { value } = eventData;
+            setMessageState((state) => ({
+              ...state,
+              pending: (state.pending ?? "") + value,
+            }));
+          } else if (eventData.type === "done") {
+            const { sourceDocuments } = eventData.data;
+
+            setMessageState((state) => ({
+              ...state,
+              pendingSourceDocuments: sourceDocuments,
+            }));
+
             setMessageState((state) => ({
               history: [...state.history, [question, state.pending ?? ""]],
               messages: [
@@ -98,7 +112,7 @@ const Chat = () => {
                 {
                   type: "apiMessage",
                   message: state.pending ?? "",
-                  sources: state.pendingSourceDocuments,
+                  sources: pendingSourceDocuments,
                 },
               ],
               pending: undefined,
@@ -109,26 +123,7 @@ const Chat = () => {
 
             ctrl.abort();
           } else {
-            console.log(event.data);
-            const data = JSON.parse(event.data);
-
-            const { msg, sources } = data;
-
-            if (msg) {
-              // if message is still coming, we only set pending
-              setMessageState((state) => ({
-                ...state,
-                pending: (state.pending ?? "") + msg,
-              }));
-            }
-
-            if (sources) {
-              const { sourceDocuments } = sources;
-              setMessageState((state) => ({
-                ...state,
-                pendingSourceDocuments: sourceDocuments,
-              }));
-            }
+            throw new Error("Unknown event data type:", eventData);
           }
         },
       });
@@ -175,10 +170,6 @@ const Chat = () => {
         >
           <div>
             {chatMessages.map((message, index) => {
-              // const avatarSrc =
-              //   message.type == "apiMessage"
-              //     ? "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80"
-              //     : "https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&w=128&h=128&dpr=2&q=80";
               const avatarSrc =
                 message.type == "apiMessage"
                   ? "/martial-arts-uniform_1f94b.png"

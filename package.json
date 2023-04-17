@@ -14,6 +14,7 @@
     "add-videos": "tsx -r dotenv/config scripts/add-videos.ts"
   },
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.6",
     "@huggingface/inference": "^1.8.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@prisma/client": "^4.12.0",

@@ -1,4 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
@@ -32,14 +31,8 @@ export default async function handler(req: NextRequest) {
   model.callbackManager.handleLLMNewToken = async (token) => {
     await writer.ready;
     await writer.write(
-      encoder.encode(`data: ${token.replace(/["'\n\r]/g, "")}\n\n`)
+      encoder.encode(JSON.stringify({ type: "token", value: token }) + "\n\n")
     );
-  };
-
-  model.callbackManager.handleLLMEnd = async () => {
-    await writer.ready;
-    await writer.write(encoder.encode(`data: [DONE]\n\n`));
-    await writer.close();
   };
 
   model.callbackManager.handleLLMError = async (e) => {
@@ -53,6 +46,21 @@ export default async function handler(req: NextRequest) {
     .call({
       question: sanitizedQuestion,
       chat_history: history || [],
+    })
+    .then(async (response) => {
+      // Convert the response to the required format
+      const responseData = {
+        type: "done",
+        data: response, // This assumes the response is already a JSON object or can be serialized as one
+      };
+
+      // Send the formatted response
+      await writer.ready;
+      await writer.write(encoder.encode(JSON.stringify(responseData) + "\n\n"));
+
+      // Close the stream
+      await writer.close();
+      console.log(response);
     })
     .catch(console.error);
 
