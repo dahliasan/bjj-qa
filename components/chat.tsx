@@ -12,9 +12,8 @@ import Spinner from "./spinner";
 const Chat = () => {
   const [messageState, setMessageState] = useState<{
     messages: MessageType[];
-    pending?: string;
     history: [string, string][];
-    pendingSourceDocuments?: any[];
+    pending?: string;
   }>({
     messages: [
       {
@@ -25,12 +24,13 @@ const Chat = () => {
     ],
     history: [],
   });
+
   const [query, setQuery] = useState<string>(
     "give me a chain for passing half guard"
   );
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { messages, pending, history, pendingSourceDocuments } = messageState;
+  const { messages, pending, history } = messageState;
 
   // set focus to the text area when the component is mounted
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -41,11 +41,20 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
+    console.log("Component rendered");
+
+    // Cleanup function
+    return () => {
+      console.log("Component unmounted");
+    };
+  }, []);
+
+  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [pending]);
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -87,9 +96,14 @@ const Chat = () => {
           history,
         }),
         signal: ctrl.signal,
+        onopen: async (response) => {
+          // console.log("Connection opened:", response);
+        },
+        onerror: (error) => {
+          console.log("Connection error:", error);
+        },
         onmessage: (event) => {
           const eventData = JSON.parse(event.data);
-          console.log(eventData);
 
           if (eventData.type === "token") {
             const { value } = eventData;
@@ -97,13 +111,8 @@ const Chat = () => {
               ...state,
               pending: (state.pending ?? "") + value,
             }));
-          } else if (eventData.type === "done") {
+          } else if (eventData.type === "response") {
             const { sourceDocuments } = eventData.data;
-
-            setMessageState((state) => ({
-              ...state,
-              pendingSourceDocuments: sourceDocuments,
-            }));
 
             setMessageState((state) => ({
               history: [...state.history, [question, state.pending ?? ""]],
@@ -112,13 +121,12 @@ const Chat = () => {
                 {
                   type: "apiMessage",
                   message: state.pending ?? "",
-                  sources: pendingSourceDocuments,
+                  sources: sourceDocuments,
                 },
               ],
               pending: undefined,
-              pendingSourceDocuments: undefined,
             }));
-
+          } else if (eventData.type === "done") {
             setLoading(false);
 
             ctrl.abort();
@@ -150,7 +158,7 @@ const Chat = () => {
             {
               type: "apiMessage",
               message: pending,
-              sources: pendingSourceDocuments,
+              sources: undefined,
             },
           ]
         : []),

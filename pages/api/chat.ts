@@ -30,8 +30,14 @@ export default async function handler(req: NextRequest) {
 
   model.callbackManager.handleLLMNewToken = async (token) => {
     await writer.ready;
+
     await writer.write(
-      encoder.encode(JSON.stringify({ type: "token", value: token }) + "\n\n")
+      encoder.encode(
+        `data: ${JSON.stringify({
+          type: "token",
+          value: token.replace(/["'\n\r]/g, ""),
+        })}\n\n`
+      )
     );
   };
 
@@ -48,15 +54,25 @@ export default async function handler(req: NextRequest) {
       chat_history: history || [],
     })
     .then(async (response) => {
-      // Convert the response to the required format
-      const responseData = {
-        type: "done",
-        data: response, // This assumes the response is already a JSON object or can be serialized as one
-      };
-
       // Send the formatted response
       await writer.ready;
-      await writer.write(encoder.encode(JSON.stringify(responseData) + "\n\n"));
+
+      await writer.write(
+        encoder.encode(
+          `data: ${JSON.stringify({
+            type: "response",
+            data: response,
+          })}\n\n`
+        )
+      );
+
+      await writer.write(
+        encoder.encode(
+          `data: ${JSON.stringify({
+            type: "done",
+          })}\n\n`
+        )
+      );
 
       // Close the stream
       await writer.close();
