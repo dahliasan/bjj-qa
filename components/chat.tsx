@@ -12,9 +12,8 @@ import Spinner from "./spinner";
 const Chat = () => {
   const [messageState, setMessageState] = useState<{
     messages: MessageType[];
-    pending?: string;
-    pendingSourceDocuments?: {}[];
     history: [string, string][];
+    pending?: string;
   }>({
     messages: [
       {
@@ -25,12 +24,13 @@ const Chat = () => {
     ],
     history: [],
   });
+
   const [query, setQuery] = useState<string>(
     "give me a chain for passing half guard"
   );
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { messages, pending, history, pendingSourceDocuments } = messageState;
+  const { messages, pending, history } = messageState;
 
   // set focus to the text area when the component is mounted
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -41,11 +41,20 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
+    console.log("Component rendered");
+
+    // Cleanup function
+    return () => {
+      console.log("Component unmounted");
+    };
+  }, []);
+
+  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [pending]);
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -87,10 +96,24 @@ const Chat = () => {
           history,
         }),
         signal: ctrl.signal,
+        onopen: async (response) => {
+          // console.log("Connection opened:", response);
+        },
+        onerror: (error) => {
+          console.log("Connection error:", error);
+        },
         onmessage: (event) => {
-          // if end of messages
-          if (event.data === "[DONE]") {
-            // when we get the end of messages, we set the message and history
+          const eventData = JSON.parse(event.data);
+
+          if (eventData.type === "token") {
+            const { value } = eventData;
+            setMessageState((state) => ({
+              ...state,
+              pending: (state.pending ?? "") + value,
+            }));
+          } else if (eventData.type === "response") {
+            const { sourceDocuments } = eventData.data;
+
             setMessageState((state) => ({
               history: [...state.history, [question, state.pending ?? ""]],
               messages: [
@@ -98,36 +121,17 @@ const Chat = () => {
                 {
                   type: "apiMessage",
                   message: state.pending ?? "",
-                  sources: state.pendingSourceDocuments,
+                  sources: sourceDocuments,
                 },
               ],
               pending: undefined,
-              pendingSourceDocuments: undefined,
             }));
-
+          } else if (eventData.type === "done") {
             setLoading(false);
 
             ctrl.abort();
           } else {
-            const data = JSON.parse(event.data);
-
-            const { msg, sources } = data;
-
-            if (msg) {
-              // if message is still coming, we only set pending
-              setMessageState((state) => ({
-                ...state,
-                pending: (state.pending ?? "") + msg,
-              }));
-            }
-
-            if (sources) {
-              const { sourceDocuments } = sources;
-              setMessageState((state) => ({
-                ...state,
-                pendingSourceDocuments: sourceDocuments,
-              }));
-            }
+            throw new Error("Unknown event data type:", eventData);
           }
         },
       });
@@ -154,7 +158,7 @@ const Chat = () => {
             {
               type: "apiMessage",
               message: pending,
-              sources: pendingSourceDocuments,
+              sources: undefined,
             },
           ]
         : []),
@@ -174,10 +178,6 @@ const Chat = () => {
         >
           <div>
             {chatMessages.map((message, index) => {
-              // const avatarSrc =
-              //   message.type == "apiMessage"
-              //     ? "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80"
-              //     : "https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&w=128&h=128&dpr=2&q=80";
               const avatarSrc =
                 message.type == "apiMessage"
                   ? "/martial-arts-uniform_1f94b.png"

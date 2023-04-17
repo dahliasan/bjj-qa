@@ -6,16 +6,10 @@ const nextConfig = {
   },
 
   webpack(config) {
-    config.externals = config.externals || [];
-    config.externals.push({
-      chromadb: "chromadb",
-      "@dqbd/tiktoken": "tiktoken",
-      "cohere-ai": "cohere",
-      "@huggingface/inference": "huggingfaceInference",
-      replicate: "replicate",
-      typeorm: "typeorm",
-    });
-    config.experiments = { ...config.experiments, topLevelAwait: true };
+    config.experiments = {
+      asyncWebAssembly: true,
+      layers: true,
+    };
 
     return config;
   },

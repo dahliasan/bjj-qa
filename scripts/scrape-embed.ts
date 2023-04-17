@@ -1,5 +1,5 @@
 import { createChunks } from "@/utils/transcript";
-import { CSVLoader } from "langchain/document_loaders";
+import { CSVLoader } from "langchain/document_loaders/fs/csv";
 import { YoutubeTranscript } from "youtube-transcript";
 import { Document } from "langchain/document";
 import type { SupabaseClient } from "@supabase/supabase-js";

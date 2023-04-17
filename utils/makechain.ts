@@ -1,6 +1,6 @@
-import { OpenAI } from "langchain/llms";
+import { OpenAI } from "langchain/llms/openai";
 import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
-import { HNSWLib, SupabaseVectorStore } from "langchain/vectorstores";
+import { SupabaseVectorStore } from "langchain/vectorstores";
 import { PromptTemplate } from "langchain/prompts";
 import { openai, openaiStream } from "./openai-client";
 
@@ -22,9 +22,37 @@ const QA_PROMPT = PromptTemplate.fromTemplate(
       Brief concise answer in Markdown:`
 );
 
+// export const makeChain = (
+//   vectorstore: SupabaseVectorStore,
+//   onTokenStream: (token: string) => void
+// ) => {
+//   // first prompt to gpt to condense the question
+//   const questionGenerator = new LLMChain({
+//     llm: openai,
+//     prompt: CONDENSE_PROMPT,
+//   });
+
+//   // second prompt to gpt to answer the question
+//   const model = openaiStream;
+
+//   model.callbackManager.handleLLMNewToken = async (token: string) => {
+//     onTokenStream(token);
+//   };
+
+//   const docChain = loadQAChain(model, { prompt: QA_PROMPT });
+
+//   // chain the two prompts together
+//   return new ChatVectorDBQAChain({
+//     vectorstore,
+//     combineDocumentsChain: docChain,
+//     questionGeneratorChain: questionGenerator,
+//     returnSourceDocuments: true,
+//     k: 4,
+//   });
+
 export const makeChain = (
   vectorstore: SupabaseVectorStore,
-  onTokenStream: (token: string) => void
+  streamModel: OpenAI
 ) => {
   // first prompt to gpt to condense the question
   const questionGenerator = new LLMChain({
@@ -32,14 +60,7 @@ export const makeChain = (
     prompt: CONDENSE_PROMPT,
   });
 
-  // second prompt to gpt to answer the question
-  const model = openaiStream;
-
-  model.callbackManager.handleLLMNewToken = async (token: string) => {
-    onTokenStream(token);
-  };
-
-  const docChain = loadQAChain(model, { prompt: QA_PROMPT });
+  const docChain = loadQAChain(streamModel, { prompt: QA_PROMPT });
 
   // chain the two prompts together
   return new ChatVectorDBQAChain({
