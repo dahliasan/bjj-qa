@@ -5,8 +5,6 @@ import { makeChain } from "@/utils/makechain";
 import { NextRequest, NextResponse } from "next/server";
 import { openaiStream } from "@/utils/openai-client";
 
-import { PrismaClient } from "@prisma/client";
-
 export const config = {
   runtime: "edge",
 };
@@ -68,15 +66,6 @@ export default async function handler(req: NextRequest) {
         )
       );
 
-      // save question and response to db
-      const prisma = new PrismaClient();
-      await prisma.userQuery.create({
-        data: {
-          query: sanitizedQuestion,
-          aiResponse: response,
-        },
-      });
-
       await writer.write(
         encoder.encode(
           `data: ${JSON.stringify({
@@ -87,7 +76,17 @@ export default async function handler(req: NextRequest) {
 
       // Close the stream
       await writer.close();
-      console.log(response);
+
+      // save question and response to db
+      const { data, error } = await supabaseClient
+        .from("user_queries")
+        .insert([{ query: sanitizedQuestion, ai_response: response }]);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log(sanitizedQuestion);
     })
     .catch(console.error);
 
