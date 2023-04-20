@@ -5,6 +5,8 @@ import { makeChain } from "@/utils/makechain";
 import { NextRequest, NextResponse } from "next/server";
 import { openaiStream } from "@/utils/openai-client";
 
+import { PrismaClient } from "@prisma/client";
+
 export const config = {
   runtime: "edge",
 };
@@ -65,6 +67,15 @@ export default async function handler(req: NextRequest) {
           })}\n\n`
         )
       );
+
+      // save question and response to db
+      const prisma = new PrismaClient();
+      await prisma.userQuery.create({
+        data: {
+          query: sanitizedQuestion,
+          aiResponse: response,
+        },
+      });
 
       await writer.write(
         encoder.encode(
