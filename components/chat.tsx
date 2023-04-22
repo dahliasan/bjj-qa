@@ -16,7 +16,7 @@ const Chat = () => {
   }>({
     messages: [
       {
-        message: "hi i'm grapple sensei how can i help?",
+        message: "oss! how can i help?",
         type: MessageType.ApiMessage,
       },
     ],

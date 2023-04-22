@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Grapple Sensei",
-  description: "your bjj coach and second brian",
+  description: "Supplement your BJJ learning with an AI jiu jitsu second brain",
 };
 
 export default function RootLayout({

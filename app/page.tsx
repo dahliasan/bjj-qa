@@ -4,14 +4,16 @@ import Poll from "@/components/poll";
 import Header from "@/components/header";
 import Analytics from "@/components/analytics";
 
-const urbanist = Urbanist({ subsets: ["latin"] });
+const urbanist = Urbanist({ subsets: ["latin"], display: "swap" });
+
+console.log(urbanist);
 
 export default function Home() {
   return (
     <>
       <Analytics />
       <main
-        className={`mx-auto flex min-h-screen max-w-prose flex-col items-center justify-center selection:bg-yellow-200 selection:text-black ${urbanist.className} gap-3 px-4`}
+        className={`mx-auto flex min-h-screen max-w-prose flex-col items-center justify-center gap-3 px-4 selection:bg-yellow-200 selection:text-black ${urbanist.className} `}
         lang="en"
       >
         <Header />
