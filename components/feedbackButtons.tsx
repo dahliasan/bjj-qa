@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import * as Toast from "@radix-ui/react-toast";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
+import TooltipWrapper from "./tooltipWrapper";
 
 export default function FeedbackButtons({
   queryId,
@@ -53,21 +55,25 @@ export default function FeedbackButtons({
   return (
     <div className={`${!queryId && "invisible"} flex items-start gap-2`}>
       <Toast.Provider>
-        <button onClick={() => handleClick(true)}>
-          {helpful ? (
-            <ThumbUpIcon fontSize="small" sx={{ fontSize: 16 }} />
-          ) : (
-            <ThumbUpOutlinedIcon fontSize="small" sx={{ fontSize: 16 }} />
-          )}
-        </button>
+        <TooltipWrapper tooltipContent="helpful">
+          <button onClick={() => handleClick(true)}>
+            {helpful ? (
+              <ThumbUpIcon fontSize="small" sx={{ fontSize: 16 }} />
+            ) : (
+              <ThumbUpOutlinedIcon fontSize="small" sx={{ fontSize: 16 }} />
+            )}
+          </button>
+        </TooltipWrapper>
 
-        <button onClick={() => handleClick(false)}>
-          {helpful === false ? (
-            <ThumbDownIcon fontSize="small" sx={{ fontSize: 16 }} />
-          ) : (
-            <ThumbDownOutlinedIcon fontSize="small" sx={{ fontSize: 16 }} />
-          )}
-        </button>
+        <TooltipWrapper tooltipContent="not helpful">
+          <button onClick={() => handleClick(false)}>
+            {helpful === false ? (
+              <ThumbDownIcon fontSize="small" sx={{ fontSize: 16 }} />
+            ) : (
+              <ThumbDownOutlinedIcon fontSize="small" sx={{ fontSize: 16 }} />
+            )}
+          </button>
+        </TooltipWrapper>
 
         <Toast.Root
           className="border[grid-template-areas:_'title_action'_'description_action'] rounded-md border border-black bg-white p-2 shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] data-[swipe=cancel]:translate-x-0 data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=closed]:animate-hide data-[state=open]:animate-slideIn data-[swipe=end]:animate-swipeOut data-[swipe=cancel]:transition-[transform_200ms_ease-out] "
