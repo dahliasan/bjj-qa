@@ -1,25 +1,23 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Message as MessageType } from "@/types/chat";
+import { ChatMessage, MessageType } from "@/types/chat";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import ReactMarkdown from "react-markdown";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import * as Form from "@radix-ui/react-form";
-import * as Avatar from "@radix-ui/react-avatar";
 import Sources from "./sources";
 import Spinner from "./spinner";
+import Message from "./message";
 
 const Chat = () => {
   const [messageState, setMessageState] = useState<{
-    messages: MessageType[];
+    messages: ChatMessage[];
     history: [string, string][];
     pending?: string;
   }>({
     messages: [
       {
-        message:
-          "Hi! I'm grapple sensei, how can I help you today? fyi I've only been watching lots of half guard and guard passing videos so far...",
-        type: "apiMessage",
+        message: "hi i'm grapple sensei how can i help?",
+        type: MessageType.ApiMessage,
       },
     ],
     history: [],
@@ -72,7 +70,7 @@ const Chat = () => {
       messages: [
         ...state.messages,
         {
-          type: "userMessage",
+          type: MessageType.UserMessage,
           message: question,
         },
       ],
@@ -119,9 +117,10 @@ const Chat = () => {
               messages: [
                 ...state.messages,
                 {
-                  type: "apiMessage",
+                  type: MessageType.ApiMessage,
                   message: state.pending ?? "",
                   sources: sourceDocuments,
+                  savedQueryId: eventData.id,
                 },
               ],
               pending: undefined,
@@ -156,9 +155,8 @@ const Chat = () => {
       ...(pending
         ? [
             {
-              type: "apiMessage",
+              type: MessageType.ApiMessage,
               message: pending,
-              sources: undefined,
             },
           ]
         : []),
@@ -184,36 +182,18 @@ const Chat = () => {
                   : "/owl.png";
 
               const avatarBg =
-                message.type == "apiMessage" ? "bg-slate-800" : "bg-blue-300";
+                message.type == "apiMessage" ? "bg-slate-800" : "bg-yellow-400";
 
               return (
                 <div
                   key={index}
                   className="border-b border-b-black bg-neutral-100 p-4"
                 >
-                  <div className="flex gap-4">
-                    <Avatar.Root
-                      className={`grid h-[45px] w-[45px] shrink-0 select-none place-items-center overflow-hidden rounded-full ${avatarBg} align-middle`}
-                    >
-                      <Avatar.Image
-                        className="h-2/3 w-2/3 rounded-[inherit] object-cover"
-                        src={avatarSrc}
-                        alt="chat avatar"
-                      />
-                      <Avatar.Fallback
-                        className={`leading-1 flex h-full w-full items-center justify-center ${avatarBg} text-[15px] font-medium`}
-                        delayMs={600}
-                      >
-                        GS
-                      </Avatar.Fallback>
-                    </Avatar.Root>
-                    <ReactMarkdown
-                      className="markdown leading-relaxed"
-                      linkTarget="_blank"
-                    >
-                      {message.message}
-                    </ReactMarkdown>
-                  </div>
+                  <Message
+                    message={message}
+                    avatarBg={avatarBg}
+                    avatarSrc={avatarSrc}
+                  />
 
                   {message.sources && <Sources sources={message.sources} />}
                 </div>

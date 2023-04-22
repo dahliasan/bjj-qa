@@ -11,23 +11,12 @@ datasource db {
 }
 
 model UserQuery {
-  id         Int        @id @default(autoincrement())
-  userId     Int?       @map("user_id") // optional, if you want to track users
+  id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id") // optional, if you want to track users
   query      String
-  aiResponse Json       @map("ai_response") // store the entire AI-generated response and sources as JSON
-  timestamp  DateTime   @default(now()) @map("timestamp")
-  feedback   Feedback[]
+  aiResponse Json     @map("ai_response") // store the entire AI-generated response and sources as JSON
+  timestamp  DateTime @default(now()) @map("timestamp")
+  helpful    Boolean
 
   @@map("user_queries")
-}
-
-model Feedback {
-  id        Int       @id @default(autoincrement())
-  userId    Int?      @map("user_id") // optional, if you want to track users
-  queryId   Int       @map("query_id")
-  helpful   Boolean
-  timestamp DateTime  @default(now()) @map("timestamp")
-  userQuery UserQuery @relation(fields: [queryId], references: [id])
-
-  @@map("feedback")
 }

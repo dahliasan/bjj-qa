@@ -54,6 +54,16 @@ export default async function handler(req: NextRequest) {
       chat_history: history || [],
     })
     .then(async (response) => {
+      // save question and response to db
+      const { data, error } = await supabaseClient
+        .from("user_queries")
+        .insert([{ query: sanitizedQuestion, ai_response: response }])
+        .select("id");
+
+      if (error) {
+        throw error;
+      }
+
       // Send the formatted response
       await writer.ready;
 
@@ -62,6 +72,7 @@ export default async function handler(req: NextRequest) {
           `data: ${JSON.stringify({
             type: "response",
             data: response,
+            id: data[0].id,
           })}\n\n`
         )
       );
@@ -76,15 +87,6 @@ export default async function handler(req: NextRequest) {
 
       // Close the stream
       await writer.close();
-
-      // save question and response to db
-      const { data, error } = await supabaseClient
-        .from("user_queries")
-        .insert([{ query: sanitizedQuestion, ai_response: response }]);
-
-      if (error) {
-        throw error;
-      }
 
       console.log(sanitizedQuestion);
     })
