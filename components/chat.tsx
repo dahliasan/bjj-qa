@@ -39,15 +39,6 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Component rendered");
-
-    // Cleanup function
-    return () => {
-      console.log("Component unmounted");
-    };
-  }, []);
-
-  useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;

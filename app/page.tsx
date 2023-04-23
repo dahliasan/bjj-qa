@@ -6,8 +6,6 @@ import Analytics from "@/components/analytics";
 
 const urbanist = Urbanist({ subsets: ["latin"], display: "swap" });
 
-console.log(urbanist);
-
 export default function Home() {
   return (
     <>
