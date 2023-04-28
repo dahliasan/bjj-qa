@@ -1,8 +1,26 @@
 import * as Avatar from "@radix-ui/react-avatar";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { ChatMessage, MessageType } from "@/types/chat";
+import gfm from "remark-gfm";
+import { ChatMessage } from "@/types/chat";
 import FeedbackButtons from "./feedbackButtons";
+
+function addLineBreaksToLists(text: string) {
+  // Split text by numbered list items (e.g., "1. ", "2. ", etc.) and unordered list items (e.g., "- ", "* ", etc.)
+  const regex = /(\d+\. |[-*] )/g;
+  const parts = text.split(regex);
+
+  // Add a line break before each matched list item
+  const processedParts = parts.map((part, index) => {
+    if (regex.test(part) && index > 0) {
+      return `\n${part}`;
+    }
+    return part;
+  });
+
+  // Join the processed parts back together
+  return processedParts.join("");
+}
 
 export default function Message({
   message,
@@ -14,6 +32,8 @@ export default function Message({
   avatarSrc: string;
 }) {
   const avatarInitials = message.type === "userMessage" ? "Me" : "GS";
+
+  console.log(addLineBreaksToLists(message.message));
 
   return (
     <div className="flex gap-4">
@@ -33,8 +53,12 @@ export default function Message({
         </Avatar.Fallback>
       </Avatar.Root>
       <div className="w-full">
-        <ReactMarkdown className="markdown leading-relaxed" linkTarget="_blank">
-          {message.message}
+        <ReactMarkdown
+          remarkPlugins={[gfm]}
+          className="prose leading-normal"
+          linkTarget="_blank"
+        >
+          {addLineBreaksToLists(message.message)}
         </ReactMarkdown>
       </div>
 

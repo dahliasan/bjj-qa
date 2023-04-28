@@ -79,3 +79,13 @@ export function extractMetadata(text: string, labels: string[]) {
     return { metadata: {}, remainingText: text };
   }
 }
+
+export function createBetterChunks(
+  transcript: YTTranscript[],
+  metadataToAdd: {}
+) {
+  // use GPT to identify the start of a new topic / technique
+  // use the start of a new topic / technique to create a new chunk
+  // summarise the chunk using GPT
+  // add metadata to the chunk
+}

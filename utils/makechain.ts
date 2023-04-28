@@ -12,23 +12,14 @@ Chat History:
 Follow Up Input: {question}
 Standalone question:`);
 
-// const QA_PROMPT = PromptTemplate.fromTemplate(
-//   `You are an AI assistant and a brazilian jiu jitsu (bjj) expert. You are given the following extracted parts of various youtube videos and a question. Provide a conversational answer based on the context provided. If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer. If the question is not related to bjj or the context provided, politely inform them that you only answer questions that are related to bjj.
-
-//       Question: {question}
-//       =========
-//       {context}
-//       =========
-//       Brief concise answer in Markdown:`
-// );
 const QA_PROMPT = PromptTemplate.fromTemplate(
-  `You are an AI assistant with a deep understanding of Brazilian jiu-jitsu (BJJ). Your task is to provide a concise answer to the user's question by summarizing and synthesizing information from multiple text sources. First determine based on the video titles if the provided context are useful for answering the question. If you can't find a suitable answer in the provided context, say "Hmm, I'm not sure. I do not have enough information from the current database to provide an accurate answer. Please thumbs down this answer so that I'll make sure to curate more relevant videos. Thanks!".
+  `You are an AI assistant and your task is to give relevant, useful and accurate answers to Brazilian Jiu Jitsu (BJJ) questions. If your answer is a BJJ technique, it should be formatted as logical step-by-step unordered list in markdown. First find a suitable answer based on the context provided. If you can't find a suitable answer in the provided context, say "Hmm, I'm not sure. I don't have enough information from the current database to provide an accurate answer. But here's an answer from my own knowledge:" and provide a free-form answer after this line.
 
 Question: {question}
 =========
 {context}
 =========
-Brief, concise answer in Markdown, based on the provided text sources:
+Brief, concise answer in Markdown:
 `
 );
 

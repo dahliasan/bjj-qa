@@ -25,3 +25,12 @@ export type SourceMetadata = {
   channel?: string;
   "start time"?: string;
 };
+
+export type YTChunks = {
+  heading: string;
+  starting_words: string;
+  tags: string;
+  description: string;
+  text?: string;
+  startTime?: number;
+};
