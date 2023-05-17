@@ -1,23 +1,40 @@
-import { createChunks } from "@/utils/transcript";
+import { createChunksNLP, fetchTranscript } from "@/utils/preprocess-videos";
 import { CSVLoader } from "langchain/document_loaders/fs/csv";
 import { YoutubeTranscript } from "youtube-transcript";
 import { Document } from "langchain/document";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { SupabaseVectorStore } from "langchain/vectorstores";
+import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
 import { Embeddings } from "langchain/dist/embeddings/base";
+import { YTVideo } from "@/types/transcript";
 
-export interface Doc {
-  videoId: string;
-  [key: string]: any;
-}
+import Bottleneck from "bottleneck";
 
-// data/youtube videos - Sheet1.csv
-export async function getYoutubeDataFromCsv(
-  path: string,
-  client: SupabaseClient
-) {
+(async () => {
+  // Get video data from CSV
+  const docs = await getYoutubeDataFromCsv(
+    "data/youtube videos - Sheet1.csv",
+    supabaseClient
+  );
+
+  console.log(docs.length, " youtube video data retrieved");
+
+  // Get transcripts from YouTube
+  console.log("getting transcripts from YouTube");
+  const transcriptDocs = await getTranscriptsAndChunk(docs.slice(0, 15));
+
+  // Embed docs into Supabase
+  console.log("embedding docs into Supabase");
+  await embedDocuments(supabaseClient, transcriptDocs, new OpenAIEmbeddings());
+
+  // Add video metadata to the videos table
+  console.log("adding video metadata to the videos table");
+  await addVideo(supabaseClient, transcriptDocs);
+})();
+
+// Main Functions
+async function getYoutubeDataFromCsv(path: string, client: SupabaseClient) {
   console.log("loading CSV data from", path);
   const loader = new CSVLoader(path);
   const docs = await loader.load();
@@ -45,7 +62,7 @@ export async function getYoutubeDataFromCsv(
 
       const title = pageContent.match(/video: (.+)/)?.[1] ?? "";
       const videoUrl = pageContent.match(/video_url: (.+)/)?.[1] ?? "";
-      const videoId = videoUrl.split("v=")[1].split("&")[0] ?? "";
+      const videoId = videoUrl.split("v=")[1]?.split("&")[0] || "";
       const channel = pageContent.match(/channel: (.+)/)?.[1] ?? "";
       const thumbnailUrl = pageContent.match(/thumbnail: (.+)/)?.[1] ?? "";
 
@@ -54,8 +71,8 @@ export async function getYoutubeDataFromCsv(
 
   // Deduplicate video data
   console.log("deduplicating video data");
-  function removeDuplicateDocs(docs: Doc[]): Doc[] {
-    const uniqueDocsMap = new Map<string, Doc>();
+  function removeDuplicateDocs(docs: YTVideo[]): YTVideo[] {
+    const uniqueDocsMap = new Map<string, YTVideo>();
 
     for (const doc of docs) {
       uniqueDocsMap.set(doc.videoId, doc);
@@ -70,45 +87,43 @@ export async function getYoutubeDataFromCsv(
   );
 }
 
-export async function getTranscriptsFromYoutubeData(
-  docs: any[]
-): Promise<Document[]> {
-  console.log("fetching video transcripts...");
+// Replace maxConcurrent and minTime with your actual rate limit values
+const limiter = new Bottleneck({
+  maxConcurrent: 15, // Maximum number of requests that can be run at the same time
+  minTime: 1000, // Minimum time between each task in milliseconds
+});
 
-  const promises = docs.map(async (doc: any) => {
-    const { videoId, title, channel } = doc;
+async function getTranscriptsAndChunk(docs: YTVideo[]): Promise<Document[]> {
+  console.log("Fetching video transcripts...");
 
-    try {
-      const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+  const promises = docs.map((doc) => {
+    return limiter.schedule(async () => {
+      const { videoId } = doc;
 
-      const biggerChunks = createChunks(transcript, {
-        maxChars: 1000,
-        maxDurationInSeconds: 60,
-        metadataToAdd: { "video title": title, channel },
-      });
+      console.log("Fetching transcript for video", videoId);
 
-      const newDocs = biggerChunks.map((chunk) => {
-        const { text, ...chunkMetadata } = chunk;
+      try {
+        const transcript = await fetchTranscript(videoId);
+        const chunks = await createChunksNLP(transcript, doc);
 
-        return new Document({
-          pageContent: chunk.text,
-          metadata: { ...doc, ...chunkMetadata },
-        });
-      });
-
-      return newDocs;
-    } catch (error: any) {
-      console.log(videoId, error);
-      return []; // return an empty array if there's an error
-    }
+        console.log("Successfully fetched and processed transcript");
+        return chunks;
+      } catch (error: any) {
+        console.error(
+          `Error processing transcript for video ${videoId}:`,
+          error.message
+        );
+        return [];
+      }
+    });
   });
 
-  const docsArray = await Promise.all(promises);
+  const docsArray: Document[][] = await Promise.all(promises);
 
-  console.log("successfully fetched transcripts");
+  console.log("Successfully fetched and processed transcripts");
 
-  // use filter to remove any empty array from the resulting array
-  return docsArray.filter((doc) => doc.length > 0).flat();
+  // Filter out any empty arrays and flatten the array of arrays
+  return docsArray.filter((docArray) => docArray.length > 0).flat();
 }
 
 async function embedDocuments(
@@ -121,10 +136,7 @@ async function embedDocuments(
   console.log("embeddings successfully stored in supabase");
 }
 
-export async function addVideo(
-  client: SupabaseClient,
-  docs: Record<string, any>[]
-) {
+async function addVideo(client: SupabaseClient, docs: Record<string, any>[]) {
   console.log("adding video metadata...");
 
   for (let doc of docs) {
@@ -132,13 +144,13 @@ export async function addVideo(
       doc = doc.metadata;
     }
 
-    const { videoId, title, channel, thumbnailUrl } = doc;
+    const { videoId, videoTitle, channel, thumbnailUrl } = doc;
 
     try {
       await client.from("videos").insert([
         {
           video_id: videoId,
-          title,
+          title: videoTitle,
           channel,
           thumbnail_url: thumbnailUrl,
         },
@@ -152,21 +164,3 @@ export async function addVideo(
   }
   console.log("video metadata successfully added to the videos table");
 }
-
-(async () => {
-  const docs = await getYoutubeDataFromCsv(
-    "data/youtube videos - Sheet1.csv",
-    supabaseClient
-  );
-  const docsWithTranscripts = await getTranscriptsFromYoutubeData(docs);
-
-  // Embed docs into Supabase
-  await embedDocuments(
-    supabaseClient,
-    docsWithTranscripts,
-    new OpenAIEmbeddings()
-  );
-
-  // Add video metadata to the videos table
-  await addVideo(supabaseClient, docsWithTranscripts);
-})();

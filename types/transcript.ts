@@ -5,11 +5,26 @@ export type YTTranscriptChunk = {
   charCount: number;
 };
 
+// type from Youtube-Transcript js
 export type YTTranscript = {
   text: string;
   duration: number;
   offset: number;
 };
+
+// transcript type from timedtext -> xml method
+export interface TranscriptItem {
+  start: number;
+  duration: number;
+  text: string;
+}
+
+// Define an interface for the transcript
+export interface Transcript {
+  transcript: {
+    text: TranscriptItem[];
+  };
+}
 
 export type Source = {
   metadata: SourceMetadata;
@@ -27,10 +42,18 @@ export type SourceMetadata = {
 };
 
 export type YTChunks = {
-  heading: string;
+  title: string;
   starting_words: string;
-  tags: string;
+  keywords: string;
   description: string;
   text?: string;
-  startTime?: number;
+  startTime?: number | null;
+};
+
+export type YTVideo = {
+  videoId: string;
+  title: string;
+  channel: string;
+  thumbnailUrl: string;
+  [key: string]: any;
 };

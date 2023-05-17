@@ -1,5 +1,3 @@
-import { Source } from "@/types/transcript";
-import { extractMetadata } from "@/utils/transcript";
 import SourceCard from "./sourceCard";
 import { Document } from "langchain/document";
 

@@ -1,10 +1,9 @@
-import { createChunks } from "@/utils/transcript";
+import { createChunks, fetchTranscript } from "@/utils/preprocess-videos";
 import { CSVLoader } from "langchain/document_loaders/fs/csv";
-import { YoutubeTranscript } from "youtube-transcript";
 import { Document } from "langchain/document";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { SupabaseVectorStore } from "langchain/vectorstores";
+import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
 import { Embeddings } from "langchain/dist/embeddings/base";
 
@@ -45,7 +44,7 @@ export async function getYoutubeDataFromCsv(
 
       const title = pageContent.match(/video: (.+)/)?.[1] ?? "";
       const videoUrl = pageContent.match(/video_url: (.+)/)?.[1] ?? "";
-      const videoId = videoUrl.split("v=")[1].split("&")[0] ?? "";
+      const videoId = videoUrl.split("v=")[1]?.split("&")[0] || "";
       const channel = pageContent.match(/channel: (.+)/)?.[1] ?? "";
       const thumbnailUrl = pageContent.match(/thumbnail: (.+)/)?.[1] ?? "";
 
@@ -79,7 +78,7 @@ export async function getTranscriptsFromYoutubeData(
     const { videoId, title, channel } = doc;
 
     try {
-      const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+      const transcript = await fetchTranscript(videoId);
 
       const biggerChunks = createChunks(transcript, {
         maxChars: 1000,
@@ -98,7 +97,7 @@ export async function getTranscriptsFromYoutubeData(
 
       return newDocs;
     } catch (error: any) {
-      console.log(videoId, error);
+      console.log(videoId, "error fetching transcript", error.message);
       return []; // return an empty array if there's an error
     }
   });
