@@ -11,6 +11,13 @@ import { YTVideo } from "@/types/transcript";
 
 import Bottleneck from "bottleneck";
 
+const BATCH_SIZE = 5; // Change this value based on your preferences
+
+const limiter = new Bottleneck({
+  maxConcurrent: BATCH_SIZE,
+  minTime: 1000, // Minimum time between each task in milliseconds
+});
+
 (async () => {
   // Get video data from CSV
   const docs = await getYoutubeDataFromCsv(
@@ -20,17 +27,27 @@ import Bottleneck from "bottleneck";
 
   console.log(docs.length, " youtube video data retrieved");
 
-  // Get transcripts from YouTube
-  console.log("getting transcripts from YouTube");
-  const transcriptDocs = await getTranscriptsAndChunk(docs.slice(0, 15));
+  for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+    const batch = docs.slice(i, i + BATCH_SIZE);
 
-  // Embed docs into Supabase
-  console.log("embedding docs into Supabase");
-  await embedDocuments(supabaseClient, transcriptDocs, new OpenAIEmbeddings());
+    console.log("getting transcripts from YouTube");
+    const transcriptPromises = batch.map((doc) =>
+      limiter.schedule(() => getTranscriptsAndChunk(doc))
+    );
 
-  // Add video metadata to the videos table
-  console.log("adding video metadata to the videos table");
-  await addVideo(supabaseClient, transcriptDocs);
+    // This will wait for all promises in the batch to resolve
+    const transcriptDocs = await Promise.all(transcriptPromises);
+
+    console.log("embedding docs into Supabase");
+    await embedDocuments(
+      supabaseClient,
+      transcriptDocs.flat(),
+      new OpenAIEmbeddings()
+    );
+
+    console.log("adding video metadata to the videos table");
+    await addVideo(supabaseClient, transcriptDocs.flat());
+  }
 })();
 
 // Main Functions
@@ -87,43 +104,27 @@ async function getYoutubeDataFromCsv(path: string, client: SupabaseClient) {
   );
 }
 
-// Replace maxConcurrent and minTime with your actual rate limit values
-const limiter = new Bottleneck({
-  maxConcurrent: 10, // Maximum number of requests that can be run at the same time
-  minTime: 1000, // Minimum time between each task in milliseconds
-});
+async function getTranscriptsAndChunk(doc: YTVideo): Promise<Document[]> {
+  const { videoId } = doc;
 
-async function getTranscriptsAndChunk(docs: YTVideo[]): Promise<Document[]> {
-  console.log("Fetching video transcripts...");
+  console.log("fetching transcript for video ", videoId);
 
-  const promises = docs.map((doc) => {
-    return limiter.schedule(async () => {
-      const { videoId } = doc;
+  try {
+    const transcript = await fetchTranscript(videoId);
+    const chunks = await createChunksNLP(transcript, doc);
 
-      console.log("Fetching transcript for video", videoId);
-
-      try {
-        const transcript = await fetchTranscript(videoId);
-        const chunks = await createChunksNLP(transcript, doc);
-
-        console.log("Successfully fetched and processed transcript");
-        return chunks;
-      } catch (error: any) {
-        console.error(
-          `Error processing transcript for video ${videoId}:`,
-          error.message
-        );
-        return [];
-      }
-    });
-  });
-
-  const docsArray: Document[][] = await Promise.all(promises);
-
-  console.log("Successfully fetched and processed transcripts");
-
-  // Filter out any empty arrays and flatten the array of arrays
-  return docsArray.filter((docArray) => docArray.length > 0).flat();
+    console.log(
+      "transcript successfully fetched + chunked for video ",
+      videoId
+    );
+    return chunks;
+  } catch (error: any) {
+    console.error(
+      `Error processing transcript for video ${videoId}:`,
+      error.message
+    );
+    return [];
+  }
 }
 
 async function embedDocuments(

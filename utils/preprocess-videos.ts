@@ -143,7 +143,7 @@ export async function createChunksNLP(
       const res = await chain.call({ transcript: pageContent, title });
       const chunks = JSON.parse(res.text);
 
-      console.log("succesfully split chunks using gpt");
+      console.log(`GPT created ${chunks.length} chunks from ${videoId}`);
 
       // Append the transcript text and timestamp to each chunk
       addTranscriptToChunks(pageContent, chunks);
@@ -180,7 +180,7 @@ export async function createChunksNLP(
 
     return allChunkDocs;
   } catch (error) {
-    console.error("Error in createChunksNLP:", error);
+    console.error("Error in createChunksNLP:", error.message);
     throw error;
   }
 }
@@ -306,7 +306,7 @@ export async function fetchTimedText(
 
       if (!containsTimedText) {
         attempts = 1;
-        throw new Error("Timed text not found for the video.");
+        throw new Error(`timedtext not found in ${videoId}`);
       }
 
       // Parse the HTML using Cheerio
@@ -318,9 +318,7 @@ export async function fetchTimedText(
       ).html();
 
       if (!ytInitialPlayerResponseScript) {
-        throw new Error(
-          "ytInitialPlayerResponse element not found in the HTML."
-        );
+        throw new Error(`ytInitialPlayerResponse not found in ${videoId}`);
       }
 
       // Extract the JSON object from the script content

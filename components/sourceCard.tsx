@@ -33,7 +33,7 @@ export default function SourceCard({
           sideOffset={5}
         >
           <div className="flex flex-col gap-2 text-[12px]">
-            <div className="">
+            <div className="flex flex-col gap-1">
               <p className="font-medium">{metadata.chunkTitle}</p>
               <p>{metadata.description}</p>
             </div>

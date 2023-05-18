@@ -85,7 +85,11 @@ body {
 }
 
 .modal {
-  /* background: hsl(24, 6%, 83%, 95%); */
-
   --tw-bg-opacity: 95%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .prose {
+    --bc: black;
+  }
 }

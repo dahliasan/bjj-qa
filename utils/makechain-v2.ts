@@ -3,6 +3,7 @@ import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
 import { SupabaseVectorStore } from "langchain/vectorstores";
 import { PromptTemplate } from "langchain/prompts";
 import { openai } from "./openai-client";
+import { get } from "http";
 
 const CONDENSE_PROMPT =
   PromptTemplate.fromTemplate(`Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question. If the follow up question is already a standalone question, just return the follow up question.
@@ -33,7 +34,8 @@ export const makeChain = (
     prompt: CONDENSE_PROMPT,
   });
 
-  // second prompt to gpt to answer the question
+  // second prompt to fetch most relevant documents
+
   const docChain = loadQAChain(streamModel, { prompt: QA_PROMPT });
 
   // chain the two prompts together
