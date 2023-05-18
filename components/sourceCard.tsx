@@ -24,7 +24,7 @@ export default function SourceCard({
           target="_blank"
           rel="noreferrer noopener"
         >
-          {index + 1}. {metadata.title}
+          {index + 1}. {metadata.chunkTitle}
         </Link>
       </HoverCard.Trigger>
       <HoverCard.Portal>
