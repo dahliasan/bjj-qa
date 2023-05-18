@@ -34,13 +34,13 @@ export default function SourceCard({
         >
           <div className="flex flex-col gap-2 text-[12px]">
             <div className="">
-              <p>{pageContent.split("\n\n")[1]}</p>
+              <p>{metadata.description}</p>
             </div>
 
             <Separator.Root className=" bg-black data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px" />
 
             <div className="">
-              <p className="font-medium">{metadata.title}</p>
+              <p className="font-medium">{metadata.videoTitle}</p>
               <p>{metadata.channel}</p>
             </div>
           </div>
