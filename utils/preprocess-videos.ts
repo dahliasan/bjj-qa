@@ -179,7 +179,7 @@ export async function createChunksNLP(
     }
 
     return allChunkDocs;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in createChunksNLP:", error.message);
     throw error;
   }
