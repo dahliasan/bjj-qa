@@ -89,7 +89,7 @@ async function getYoutubeDataFromCsv(path: string, client: SupabaseClient) {
 
 // Replace maxConcurrent and minTime with your actual rate limit values
 const limiter = new Bottleneck({
-  maxConcurrent: 15, // Maximum number of requests that can be run at the same time
+  maxConcurrent: 10, // Maximum number of requests that can be run at the same time
   minTime: 1000, // Minimum time between each task in milliseconds
 });
 

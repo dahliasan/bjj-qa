@@ -155,10 +155,7 @@ export async function createChunksNLP(
         const { title: chunkTitle, keywords, description, ...metadata } = chunk;
 
         // Create a new document object for the chunk
-        const pageContent = `${title}
-         ${chunkTitle}
-         ${description}
-         ${keywords}`;
+        const pageContent = `${title}\n\n${chunkTitle}\n\n${description}\n\n${keywords}`;
 
         const chunkDoc = new Document({
           pageContent,
@@ -254,8 +251,6 @@ export function addTimestampToChunks(
   });
 }
 
-import Fuse from "fuse.js";
-
 export function addTranscriptToChunks(transcript: string, chunks: YTChunks[]) {
   if (!transcript) {
     console.warn("The transcript is empty. No chunks will be processed.");
@@ -264,53 +259,26 @@ export function addTranscriptToChunks(transcript: string, chunks: YTChunks[]) {
 
   const lowerCaseTranscript = removePunctuation(transcript.toLowerCase());
 
-  // Fuse.js setup
-  const options = {
-    includeScore: true,
-    isCaseSensitive: false,
-    shouldSort: true,
-    findAllMatches: true,
-    minMatchCharLength: 2,
-    location: 0,
-    threshold: 0.2, // Adjust this value according to how strict you want to match
-    distance: 100, // The distance between the string and pattern match
-  };
-
-  const fuse = new Fuse([lowerCaseTranscript], options);
-
   chunks.forEach((chunk, index) => {
     const lowerCaseStartingWords = removePunctuation(
       chunk.starting_words.toLowerCase()
     );
+    const start = lowerCaseTranscript.lastIndexOf(lowerCaseStartingWords);
 
-    const result = fuse.search(lowerCaseStartingWords);
-
-    if (
-      result.length === 0 ||
-      result[0].score === undefined ||
-      result[0].score > 0.5
-    ) {
+    if (start === -1) {
       console.warn(
         `Starting words "${chunk.starting_words}" not found in the transcript`
       );
       return;
     }
 
-    const start = result[0].item.indexOf(lowerCaseStartingWords);
-
     let end = lowerCaseTranscript.length;
     if (index < chunks.length - 1) {
-      const nextResult = fuse.search(
+      const nextStart = lowerCaseTranscript.lastIndexOf(
         removePunctuation(chunks[index + 1].starting_words.toLowerCase())
       );
-      if (
-        nextResult.length > 0 &&
-        nextResult[0].score !== undefined &&
-        nextResult[0].score <= 0.5
-      ) {
-        end = nextResult[0].item.indexOf(
-          removePunctuation(chunks[index + 1].starting_words.toLowerCase())
-        );
+      if (nextStart !== -1) {
+        end = nextStart;
       }
     }
 

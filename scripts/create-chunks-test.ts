@@ -92,7 +92,6 @@ const transcriptMaxTokenCount =
         const res = await chain.call({ transcript: pageContent, title });
         const chunks = JSON.parse(res.text);
 
-        console.log(chunks);
         // Add the transcript text and timestamp to each chunk
         addTranscriptToChunks(pageContent, chunks);
         addTimestampToChunks(transcript, chunks);
