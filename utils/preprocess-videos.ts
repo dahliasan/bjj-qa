@@ -115,6 +115,7 @@ export async function createChunksNLP(
     GPT3_MAX_TOKEN - OUTPUT_MAX_TOKEN - templateTokenCount;
 
   const { title, channel, thumbnailUrl, videoId } = videoMetadata;
+  let response;
 
   try {
     // combine all the text into one string
@@ -140,8 +141,8 @@ export async function createChunksNLP(
       const { pageContent } = document;
 
       // Call the chain function to generate chunks from the page content
-      const res = await chain.call({ transcript: pageContent, title });
-      const chunks = JSON.parse(res.text);
+      response = await chain.call({ transcript: pageContent, title });
+      const chunks = JSON.parse(response.text);
 
       console.log(`GPT created ${chunks.length} chunks from ${videoId}`);
 
@@ -180,7 +181,10 @@ export async function createChunksNLP(
 
     return allChunkDocs;
   } catch (error: any) {
-    console.error("Error in createChunksNLP:", error.message);
+    if (response) {
+      console.error(`Error in createChunksNLP for ${videoId}:`, response);
+    }
+
     throw error;
   }
 }

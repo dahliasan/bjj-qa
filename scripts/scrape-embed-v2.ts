@@ -132,7 +132,6 @@ async function embedDocuments(
   docs: Document[],
   embeddings: Embeddings
 ) {
-  console.log("creating embeddings...");
   await SupabaseVectorStore.fromDocuments(docs, embeddings, { client });
   console.log("embeddings successfully stored in supabase");
 }
