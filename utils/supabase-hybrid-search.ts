@@ -10,8 +10,8 @@ export const getRelevantDocuments = async (query: string) => {
   const retriever = new SupabaseHybridSearch(embeddings, {
     client,
     //  Below are the defaults, expecting that you set up your supabase table and functions according to the guide above. Please change if necessary.
-    similarityK: 2,
-    keywordK: 2,
+    similarityK: 3,
+    keywordK: 3,
     tableName: "documents",
     similarityQueryName: "match_documents",
     keywordQueryName: "kw_match_documents",
@@ -19,7 +19,5 @@ export const getRelevantDocuments = async (query: string) => {
 
   const results = await retriever.getRelevantDocuments(query);
 
-  console.log(results);
+  return results;
 };
-
-getRelevantDocuments("knee shield");

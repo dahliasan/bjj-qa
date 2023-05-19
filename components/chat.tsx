@@ -168,12 +168,14 @@ const Chat = () => {
           <div>
             {chatMessages.map((message, index) => {
               const avatarSrc =
-                message.type == "apiMessage"
+                message.type == "assistantMessage"
                   ? "/martial-arts-uniform_1f94b.png"
                   : "/owl.png";
 
               const avatarBg =
-                message.type == "apiMessage" ? "bg-slate-800" : "bg-yellow-400";
+                message.type == "assistantMessage"
+                  ? "bg-slate-800"
+                  : "bg-yellow-400";
 
               return (
                 <div

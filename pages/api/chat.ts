@@ -89,6 +89,7 @@ export default async function handler(req: NextRequest) {
       await writer.close();
 
       console.log(sanitizedQuestion);
+      console.log(history);
     })
     .catch(console.error);
 
