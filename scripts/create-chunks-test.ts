@@ -93,24 +93,19 @@ const transcriptMaxTokenCount =
         const chunks = JSON.parse(res.text);
 
         // Add the transcript text and timestamp to each chunk
-        addTranscriptToChunks(pageContent, chunks);
+        addTranscriptToChunks(pageContent, chunks, videoId);
         addTimestampToChunks(transcript, chunks);
 
         // Create a new document for each chunk
         const chunkDocs = chunks.map((chunk: YTChunks) => {
           // Extract the chunk title and metadata from the chunk object
-          const {
-            title: chunkTitle,
-            keywords,
-            description,
-            ...metadata
-          } = chunk;
+          const { title: chunkTitle, keywords, summary, ...metadata } = chunk;
 
           // Create a new document object for the chunk
           const pageContent = `${title}
           ${chunkTitle}
           ${keywords}
-          ${description}`;
+          ${summary}`;
 
           const chunkDoc = new Document({
             pageContent,
@@ -120,7 +115,7 @@ const transcriptMaxTokenCount =
               channel,
               thumbnailUrl,
               chunkTitle,
-              description,
+              summary,
               ...metadata,
             },
           });
