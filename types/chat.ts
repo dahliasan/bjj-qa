@@ -1,5 +1,5 @@
 export enum MessageType {
-  ApiMessage = "apiMessage",
+  ApiMessage = "assistantMessage",
   UserMessage = "userMessage",
 }
 

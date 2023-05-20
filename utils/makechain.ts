@@ -33,6 +33,7 @@ export const makeChain = (
     prompt: CONDENSE_PROMPT,
   });
 
+  // second prompt to gpt to answer the question
   const docChain = loadQAChain(streamModel, { prompt: QA_PROMPT });
 
   // chain the two prompts together
@@ -41,6 +42,6 @@ export const makeChain = (
     combineDocumentsChain: docChain,
     questionGeneratorChain: questionGenerator,
     returnSourceDocuments: true,
-    k: 4,
+    k: 1,
   });
 };

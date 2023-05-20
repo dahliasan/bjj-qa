@@ -24,7 +24,7 @@ export default function SourceCard({
           target="_blank"
           rel="noreferrer noopener"
         >
-          {index + 1}. {metadata.title}
+          {index + 1}. {metadata.chunkTitle}
         </Link>
       </HoverCard.Trigger>
       <HoverCard.Portal>
@@ -33,14 +33,15 @@ export default function SourceCard({
           sideOffset={5}
         >
           <div className="flex flex-col gap-2 text-[12px]">
-            <div className="">
-              <p>{pageContent.split("\n\n")[1]}</p>
+            <div className="flex flex-col gap-1">
+              <p className="font-medium">{metadata.chunkTitle}</p>
+              <p>{metadata.summary}</p>
             </div>
 
             <Separator.Root className=" bg-black data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px" />
 
             <div className="">
-              <p className="font-medium">{metadata.title}</p>
+              <p className="font-medium">{metadata.videoTitle}</p>
               <p>{metadata.channel}</p>
             </div>
           </div>

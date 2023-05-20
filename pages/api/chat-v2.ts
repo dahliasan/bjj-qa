@@ -1,9 +1,9 @@
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
 import { supabaseClient } from "@/utils/supabase-client";
-import { makeChain } from "@/utils/makechain";
 import { NextRequest, NextResponse } from "next/server";
 import { openaiStream } from "@/utils/openai-client";
+import { getVectorSearchAnswer } from "@/utils/vector-search-qa-chain";
 
 export const config = {
   runtime: "edge",
@@ -12,10 +12,12 @@ export const config = {
 export default async function handler(req: NextRequest) {
   const { question, history } = await req.json();
 
+  const chat_history = history || [];
+
   // OpenAI recommends replacing newlines with spaces for best results
   const sanitizedQuestion = question.trim().replaceAll("\n", " ");
 
-  /* create vectorstore*/
+  /* create vectorstore */
   const vectorStore = await SupabaseVectorStore.fromExistingIndex(
     new OpenAIEmbeddings(),
     { client: supabaseClient }
@@ -46,13 +48,7 @@ export default async function handler(req: NextRequest) {
     await writer.abort(e);
   };
 
-  const chain = makeChain(vectorStore, model);
-
-  chain
-    .call({
-      question: sanitizedQuestion,
-      chat_history: history || [],
-    })
+  getVectorSearchAnswer(model, vectorStore, sanitizedQuestion, chat_history, 4)
     .then(async (response) => {
       // save question and response to db
       const { data, error } = await supabaseClient
@@ -63,6 +59,8 @@ export default async function handler(req: NextRequest) {
       if (error) {
         throw error;
       }
+
+      console.log(response);
 
       // Send the formatted response
       await writer.ready;
@@ -87,9 +85,6 @@ export default async function handler(req: NextRequest) {
 
       // Close the stream
       await writer.close();
-
-      console.log(sanitizedQuestion);
-      console.log(history);
     })
     .catch(console.error);
 

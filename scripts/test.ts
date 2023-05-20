@@ -1,9 +1,8 @@
-import { fetchTranscript } from "../utils/preprocess-videos";
-import { makeChain } from "../utils/makechain-create-timestamps";
+// import { fetchTranscript } from "../utils/preprocess-videos";
 
-// Usage example
-const videoId = "J8OxuvhxXlo";
+// // Usage example
+// const videoId = "FQaA53Z8MjA";
 
-fetchTranscript(videoId).then(async (transcript) => {
-  console.log(transcript);
-});
+// fetchTranscript(videoId).then(async (transcript) => {
+//   console.log(transcript);
+// });

@@ -5,19 +5,19 @@ import {
   YTVideo,
 } from "@/types/transcript";
 
-import {
-  makeChain,
-  CHUNK_PROMPT_TEMPLATE,
-} from "./makechain-create-timestamps";
-
-import { encoding_for_model } from "@dqbd/tiktoken";
 import { TokenTextSplitter } from "langchain/text_splitter";
 import { Document } from "langchain/document";
 import { load } from "cheerio";
 import * as xml2js from "xml2js";
 import he from "he";
 
-// for scrape-embed v1
+import { LLMChain } from "langchain/chains";
+import { openai } from "./openai-client";
+import { CHUNK_PROMPT_TEMPLATE } from "./prompts";
+
+import Fuse from "fuse.js";
+
+/* Functions for scrape and embed v1 */
 export function createChunks(
   transcript: TranscriptItem[],
   options: { maxChars: number; maxDurationInSeconds: number; metadataToAdd: {} }
@@ -73,7 +73,6 @@ export function createChunks(
   return chunks;
 }
 
-// for scrape-embed v1
 export function extractMetadata(text: string, labels: string[]) {
   const metadata = {} as Record<string, string>;
 
@@ -97,24 +96,25 @@ export function extractMetadata(text: string, labels: string[]) {
   }
 }
 
-// for scrape-embed v2
+export async function fetchTranscript(
+  videoId: string
+): Promise<TranscriptItem[]> {
+  const timedText = await fetchTimedText(videoId);
+
+  const transcript = await parseXml(timedText);
+
+  return transcript.transcript.text;
+}
+
 export async function createChunksNLP(
   transcript: TranscriptItem[],
   videoMetadata: YTVideo
 ): Promise<Document[]> {
-  const GPT3_MAX_TOKEN = 4096;
-  const OUTPUT_MAX_TOKEN = 800;
-
-  // get token count for template
-  const encoder = encoding_for_model("gpt-3.5-turbo");
-  const tokens = encoder.encode(CHUNK_PROMPT_TEMPLATE, "all");
-  const templateTokenCount = tokens.length;
-
   // get max token count for transcript
-  const transcriptMaxTokenCount =
-    GPT3_MAX_TOKEN - OUTPUT_MAX_TOKEN - templateTokenCount;
+  const transcriptMaxTokenCount = 3000;
 
   const { title, channel, thumbnailUrl, videoId } = videoMetadata;
+  let response;
 
   try {
     // combine all the text into one string
@@ -124,12 +124,12 @@ export async function createChunksNLP(
     const splitter = new TokenTextSplitter({
       encodingName: "cl100k_base",
       chunkSize: transcriptMaxTokenCount,
-      chunkOverlap: 0,
+      chunkOverlap: 100,
     });
 
     const output = await splitter.createDocuments([text]);
 
-    const chain = makeChain();
+    const chain = new LLMChain({ llm: openai, prompt: CHUNK_PROMPT_TEMPLATE });
 
     // Initialize an empty array to hold all the chunk documents
     const allChunkDocs = [];
@@ -139,23 +139,34 @@ export async function createChunksNLP(
       // Extract the page content from the document
       const { pageContent } = document;
 
-      // Call the chain function to generate chunks from the page content
-      const res = await chain.call({ transcript: pageContent, title });
-      const chunks = JSON.parse(res.text);
+      // If page content is less than 50 words then skip it
+      if (pageContent.split(" ").length < 50) {
+        continue;
+      }
 
-      console.log("succesfully split chunks using gpt");
+      // Call the chain function to generate chunks from the page content
+      response = await chain.call({ transcript: pageContent, title });
+      const chunks = JSON.parse(response.text);
+
+      console.log(`GPT created ${chunks.length} chunks from ${videoId}`);
 
       // Append the transcript text and timestamp to each chunk
-      addTranscriptToChunks(pageContent, chunks);
+      addTranscriptToChunks(pageContent, chunks, videoId);
       addTimestampToChunks(transcript, chunks);
 
       // Map the chunks to an array of chunk documents
       const chunkDocs = chunks.map((chunk: YTChunks) => {
         // Extract the chunk title and metadata from the chunk object
-        const { title: chunkTitle, keywords, description, ...metadata } = chunk;
+        const {
+          title: chunkTitle,
+          keywords,
+          summary,
+          text,
+          ...metadata
+        } = chunk;
 
         // Create a new document object for the chunk
-        const pageContent = `${title}\n\n${chunkTitle}\n\n${description}\n\n${keywords}`;
+        const pageContent = `video title: ${title}\n\n chunk title: ${chunkTitle}\n\n${summary}\n\nkeywords: ${keywords}\n\n${text}`;
 
         const chunkDoc = new Document({
           pageContent,
@@ -164,8 +175,9 @@ export async function createChunksNLP(
             videoTitle: title,
             channel,
             chunkTitle,
-            description,
+            summary,
             keywords,
+            text,
             ...metadata,
             thumbnailUrl,
           },
@@ -179,10 +191,111 @@ export async function createChunksNLP(
     }
 
     return allChunkDocs;
-  } catch (error) {
-    console.error("Error in createChunksNLP:", error);
+  } catch (error: any) {
+    if (response) {
+      console.error(`Error in createChunksNLP for ${videoId}:`, response);
+    }
+
     throw error;
   }
+}
+
+export function addTranscriptToChunks(
+  transcript: string,
+  chunks: YTChunks[],
+  videoId: string
+) {
+  if (!transcript) {
+    console.warn("The transcript is empty. No chunks will be processed.");
+    return;
+  }
+
+  const transcriptClean = removePunctuation(transcript.toLowerCase());
+
+  const transcriptWords = transcriptClean.split(" ");
+
+  // Create an array of 10-word phrases along with their starting indexes
+  const phrases = transcriptWords.map((_, i, arr) => {
+    const phrase = arr.slice(i, i + 10).join(" ");
+    return {
+      phrase,
+      index: arr.slice(0, i).join(" ").length + i, // Account for spaces
+    };
+  });
+
+  const fuse = new Fuse(phrases, { includeScore: true, keys: ["phrase"] });
+
+  let nextStart = 0; // Initialize nextStart
+
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk = chunks[index];
+    const openingWords = removePunctuation(chunk.opening.toLowerCase());
+
+    let start =
+      nextStart !== -1 ? nextStart : transcriptClean.indexOf(openingWords);
+    if (start === -1) {
+      // If exact match is not found, use fuzzy search
+      console.warn(
+        `${videoId} - Could not find "${openingWords}" in chunk ${index} using simple string search, using fuzzy search`
+      );
+      const results = fuse.search(openingWords);
+      console.log("fuzzy search results", results);
+      if (results.length > 0) {
+        // You can adjust the threshold
+        start = results[0].item.index; // Use the index of the match
+      } else {
+        throw new Error(
+          `Could not find "${openingWords}" in "${transcriptClean}"`
+        );
+      }
+    }
+
+    let end = transcriptClean.length;
+
+    if (index < chunks.length - 1) {
+      const nextOpeningWords = removePunctuation(
+        chunks[index + 1].opening.toLowerCase()
+      );
+      nextStart = transcriptClean.indexOf(
+        nextOpeningWords,
+        start + openingWords.length
+      );
+      if (nextStart === -1) {
+        // If exact match is not found, use fuzzy search
+        const nextResults = fuse.search(nextOpeningWords);
+        if (nextResults.length > 0) {
+          // You can adjust the threshold
+          nextStart = nextResults[0].item.index; // Use the index of the match
+        }
+      }
+      end = nextStart !== -1 ? nextStart : end;
+    }
+
+    chunk.text = transcriptClean.slice(start, end);
+  }
+}
+
+export function addTimestampToChunks(
+  transcript: TranscriptItem[],
+  chunks: YTChunks[]
+) {
+  chunks.forEach((chunk) => {
+    const matches = findBestMatches(transcript, chunk.opening);
+
+    // get the first item in matches
+    const firstMatch = matches[0];
+
+    // Only update the startTime if a match was found
+    if (firstMatch) {
+      chunk.startTime = firstMatch.start;
+    } else {
+      // Handle the case where no match was found
+      console.warn(
+        `No matches found for chunk starting with "${chunk.opening}". Setting startTime to null.`
+      );
+      chunk.startTime = null;
+    }
+  });
 }
 
 function findBestMatches(
@@ -228,64 +341,6 @@ function findBestMatches(
   return bestMatches;
 }
 
-export function addTimestampToChunks(
-  transcript: TranscriptItem[],
-  chunks: YTChunks[]
-) {
-  chunks.forEach((chunk) => {
-    const matches = findBestMatches(transcript, chunk.starting_words);
-
-    // get the first item in matches
-    const firstMatch = matches[0];
-
-    // Only update the startTime if a match was found
-    if (firstMatch) {
-      chunk.startTime = firstMatch.start;
-    } else {
-      // Handle the case where no match was found
-      console.warn(
-        `No matches found for chunk starting with "${chunk.starting_words}". Setting startTime to null.`
-      );
-      chunk.startTime = null;
-    }
-  });
-}
-
-export function addTranscriptToChunks(transcript: string, chunks: YTChunks[]) {
-  if (!transcript) {
-    console.warn("The transcript is empty. No chunks will be processed.");
-    return;
-  }
-
-  const lowerCaseTranscript = removePunctuation(transcript.toLowerCase());
-
-  chunks.forEach((chunk, index) => {
-    const lowerCaseStartingWords = removePunctuation(
-      chunk.starting_words.toLowerCase()
-    );
-    const start = lowerCaseTranscript.lastIndexOf(lowerCaseStartingWords);
-
-    if (start === -1) {
-      console.warn(
-        `Starting words "${chunk.starting_words}" not found in the transcript`
-      );
-      return;
-    }
-
-    let end = lowerCaseTranscript.length;
-    if (index < chunks.length - 1) {
-      const nextStart = lowerCaseTranscript.lastIndexOf(
-        removePunctuation(chunks[index + 1].starting_words.toLowerCase())
-      );
-      if (nextStart !== -1) {
-        end = nextStart;
-      }
-    }
-
-    chunk.text = lowerCaseTranscript.slice(start, end);
-  });
-}
-
 function removePunctuation(text: string) {
   return text.replace(/[^\w\s]/g, "");
 }
@@ -306,7 +361,7 @@ export async function fetchTimedText(
 
       if (!containsTimedText) {
         attempts = 1;
-        throw new Error("Timed text not found for the video.");
+        throw new Error(`timedtext not found in ${videoId}`);
       }
 
       // Parse the HTML using Cheerio
@@ -318,9 +373,7 @@ export async function fetchTimedText(
       ).html();
 
       if (!ytInitialPlayerResponseScript) {
-        throw new Error(
-          "ytInitialPlayerResponse element not found in the HTML."
-        );
+        throw new Error(`ytInitialPlayerResponse not found in ${videoId}`);
       }
 
       // Extract the JSON object from the script content
@@ -364,8 +417,6 @@ export async function fetchTimedText(
   throw new Error("Failed to fetch timed text.");
 }
 
-// parse XML
-
 function decodeHtml(html: string) {
   if (!html) {
     return "";
@@ -398,14 +449,4 @@ export async function parseXml(xml: string): Promise<Transcript> {
       }
     );
   });
-}
-
-export async function fetchTranscript(
-  videoId: string
-): Promise<TranscriptItem[]> {
-  const timedText = await fetchTimedText(videoId);
-
-  const transcript = await parseXml(timedText);
-
-  return transcript.transcript.text;
 }

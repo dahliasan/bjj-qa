@@ -55,7 +55,7 @@ export default function Message({
       <div className="w-full">
         <ReactMarkdown
           remarkPlugins={[gfm]}
-          className="prose leading-normal"
+          className="prose leading-normal dark:text-black"
           linkTarget="_blank"
         >
           {addLineBreaksToLists(message.message)}

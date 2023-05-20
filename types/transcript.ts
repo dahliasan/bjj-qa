@@ -43,9 +43,11 @@ export type SourceMetadata = {
 
 export type YTChunks = {
   title: string;
-  starting_words: string;
+  opening: string;
   keywords: string;
-  description: string;
+  summary: string;
+  // starting_words: string;
+  // description: string;
   text?: string;
   startTime?: number | null;
 };
