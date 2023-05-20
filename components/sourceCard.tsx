@@ -35,7 +35,7 @@ export default function SourceCard({
           <div className="flex flex-col gap-2 text-[12px]">
             <div className="flex flex-col gap-1">
               <p className="font-medium">{metadata.chunkTitle}</p>
-              <p>{metadata.description}</p>
+              <p>{metadata.summary}</p>
             </div>
 
             <Separator.Root className=" bg-black data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px" />

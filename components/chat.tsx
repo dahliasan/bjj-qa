@@ -24,7 +24,7 @@ const Chat = () => {
   });
 
   const [query, setQuery] = useState<string>(
-    "give me a chain for passing half guard"
+    "What is the most effective way to take someone's back in jiu-jitsu?"
   );
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -75,7 +75,7 @@ const Chat = () => {
     const ctrl = new AbortController();
 
     try {
-      fetchEventSource("/api/chat", {
+      fetchEventSource("/api/chat-v2", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

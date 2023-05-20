@@ -11,7 +11,7 @@ import { YTVideo } from "@/types/transcript";
 
 import Bottleneck from "bottleneck";
 
-const BATCH_SIZE = 5; // Change this value based on your preferences
+const BATCH_SIZE = 1; // Change this value based on your preferences
 
 const limiter = new Bottleneck({
   maxConcurrent: BATCH_SIZE,

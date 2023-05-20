@@ -1,19 +1,20 @@
 import { LLMChain } from "langchain/chains";
+import { openai } from "./openai-client";
+import { OpenAI } from "langchain/dist";
+import { SupabaseVectorStore } from "langchain/vectorstores";
 import {
   CONDENSE_PROMPT,
   QA_PROMPT,
   formatChatHistory,
   formatContextFromDocuments,
 } from "./prompts";
-import { openai } from "./openai-client";
-import { getRelevantDocuments } from "./supabase-hybrid-search";
-import { Document } from "langchain/document";
-import { OpenAI } from "langchain/dist";
 
-export const getHybridSearchAnswerChain = async (
+export const getVectorSearchAnswer = async (
   model: OpenAI,
+  vectorStore: SupabaseVectorStore,
   question: string,
-  chat_history: string[][]
+  chat_history: string[][],
+  k: number = 4
 ) => {
   // first prompt to gpt to condense the question
   const questionGenerator = new LLMChain({
@@ -31,7 +32,11 @@ export const getHybridSearchAnswerChain = async (
   const standaloneQuestion = questionResponse.text;
 
   // second prompt to fetch most relevant documents
-  const relevantDocs = await getRelevantDocuments(standaloneQuestion);
+  const relevantDocs = await vectorStore.similaritySearch(
+    standaloneQuestion,
+    k
+  );
+
   const formattedContext = formatContextFromDocuments(relevantDocs);
 
   const answerGenerator = new LLMChain({

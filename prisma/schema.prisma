@@ -20,3 +20,21 @@ model UserQuery {
 
   @@map("user_queries")
 }
+
+model documents {
+  id        Int                    @id @default(autoincrement())
+  content   String?
+  metadata  Json?
+  // video     Video                  @relation(fields: [videoId], references: [videoId])
+  // videoId   String
+  embedding Unsupported("vector")?
+}
+
+model videos {
+  id           Int    @id @default(autoincrement())
+  videoId      String @unique
+  title        String
+  channel      String
+  thumbnailUrl String
+  // Document     Document[]
+}
